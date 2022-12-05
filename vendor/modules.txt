@@ -1,0 +1,23 @@
+# github.com/davyxu/cellnet v4.1.0+incompatible
+## explicit
+github.com/davyxu/cellnet
+github.com/davyxu/cellnet/codec
+github.com/davyxu/cellnet/codec/binary
+github.com/davyxu/cellnet/codec/protoplus
+github.com/davyxu/cellnet/msglog
+github.com/davyxu/cellnet/peer
+github.com/davyxu/cellnet/peer/tcp
+github.com/davyxu/cellnet/proc
+github.com/davyxu/cellnet/proc/tcp
+github.com/davyxu/cellnet/relay
+github.com/davyxu/cellnet/rpc
+github.com/davyxu/cellnet/util
+# github.com/davyxu/golog v0.1.0
+## explicit
+github.com/davyxu/golog
+# github.com/davyxu/goobjfmt v0.1.0
+## explicit
+github.com/davyxu/goobjfmt
+# github.com/davyxu/protoplus v0.1.0
+## explicit
+github.com/davyxu/protoplus/proto
