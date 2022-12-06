@@ -1,28 +1,32 @@
 package providee
 
 import (
-	"fmt"
-	"fuxi/net"
+	"fuxi/core"
 )
 
 type Providee struct {
-	ID int16
-	Name string
+	core.CoreNet
 }
 
-func NewProvidee(id int16, name string) *Providee {
-	return &Providee{ID: id, Name: name}
+type ProvideeService struct {
+	core.CoreService
+	ProvideeServiceConfProp
 }
 
-func (self *Providee) Start() {
-	factory := &ProvideeFactory{}
-	netConf := net.NewNetConf(self.Name)
-	provideeConf := netConf.NewService(fmt.Sprintf("providee-%s", self.Name)).BuildFactory(factory)
-	//todo 从etcd拿所有provider
-	provideeConf.NewPort(net.Connector).BuildHost("127.0.0.1").BuildPort(8088)
-	ops := net.NewNetOptions(netConf).BuildFactory(factory)
-	net := net.FXNet(ops)
-	net.Start()
-	net.Wait()
-	net.Stop()
+func NewProvidee(pvid int16, name string) *Providee {
+	p := &Providee{}
+	s := p.NewService(func() core.Service {
+		s := &ProvideeService{}
+		s.pvid = pvid
+		s.SetName(name)
+		return s
+	})
+	s.NewEventHandler(func() core.EventHandler {
+		return &ProvideeEventHandler{}
+	})
+	//todo 从etcd拿所有的provider
+	s.NewPort(func() core.Port {
+		return core.NewConnector("127.0.0.1", 8088)
+	}).SetService(s) //fixme
+	return p
 }

@@ -1,18 +1,23 @@
 package providee
 
 import (
+	"fuxi/core"
 	msg "fuxi/gen"
-	"fuxi/net"
 )
 
 type ProvideeEventHandler struct {
-	net.SampleEventHandler
+	core.CoreEventHandler
 }
 
-func (self ProvideeEventHandler) OnSessionAdd(session *net.Session) {
-	session.Send(&msg.BindPvid{PVID: })
+func (self *ProvideeEventHandler) Init() {
+	self.RegisterMsg(&msg.PDispatch{}, nil)
+	self.RegisterMsg(&msg.BindPvid{}, nil)
+	self.RegisterMsg(&msg.UnBindPvid{}, nil)
 }
 
-func (self ProvideeEventHandler) OnSessionRemoved(session *net.Session) {
-
+func (self *ProvideeEventHandler) OnSessionAdd(session core.Session) {
+	bind := &msg.BindPvid{}
+	service := session.Port().Service()
+	bind.PVID = service.(ProvideeServiceConf).PVID()
+	session.Send(bind)
 }

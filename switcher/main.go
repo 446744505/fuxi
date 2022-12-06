@@ -1,23 +1,25 @@
 package main
 
 import (
+	"fuxi/core"
 	_ "fuxi/gen"
-	"fuxi/net"
+	"fuxi/switcher/linker"
+	"fuxi/switcher/provider"
 )
 
 func main()  {
-	netConf := net.NewNetConf("switcher")
-	linkerConf := netConf.NewService("linker")
-	linkerConf.NewPort(net.Acceptor).BuildHost("127.0.0.1").BuildPort(8080)
-	providerConf := netConf.NewService("provider")
-	providerConf.NewPort(net.Acceptor).BuildHost("127.0.0.1").BuildPort(8088)
-	ops := net.NewNetOptions(netConf).BuildFactory(&SwitcherFactory{})
-	net := net.FXNet(ops)
-	net.Start()
-	net.Wait()
-	net.Stop()
+	s := &Switcher{}
+	s.NewService(func() core.Service {
+		return linker.NewLinker()
+	})
+	s.NewService(func() core.Service {
+		return provider.NewProvider()
+	})
+	s.Start()
+	s.Wait()
+	s.Stop()
 }
 
-type SwitcherFactory struct {
-	net.SampleNetFactory
+type Switcher struct {
+	core.CoreNet
 }

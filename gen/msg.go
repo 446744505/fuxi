@@ -1,7 +1,9 @@
 package msg
 
-type Dispatch struct {
+import "fuxi/core"
 
+type Dispatch struct {
+	core.CoreMsg `binary:"-"`
 }
 
 func (self Dispatch) ID() int16 {
@@ -9,7 +11,7 @@ func (self Dispatch) ID() int16 {
 }
 
 type PDispatch struct {
-
+	core.CoreMsg `binary:"-"`
 }
 
 func (self PDispatch) ID() int16 {
@@ -17,6 +19,7 @@ func (self PDispatch) ID() int16 {
 }
 
 type BindPvid struct {
+	core.CoreMsg `binary:"-"`
 	PVID int16
 }
 
@@ -25,6 +28,7 @@ func (self BindPvid) ID() int16 {
 }
 
 type UnBindPvid struct {
+	core.CoreMsg `binary:"-"`
 	PVID int16
 }
 

@@ -3,6 +3,8 @@ package main
 import "fuxi/providee"
 
 func main() {
-	prov := providee.NewProvidee(1, "gs")
-	prov.Start()
+	p := providee.NewProvidee(1, "gs")
+	p.Start()
+	p.Wait()
+	p.Stop()
 }
