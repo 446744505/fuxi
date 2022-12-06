@@ -6,5 +6,4 @@ func main() {
 	p := providee.NewProvidee(1, "gs")
 	p.Start()
 	p.Wait()
-	p.Stop()
 }

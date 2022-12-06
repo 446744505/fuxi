@@ -1,6 +1,9 @@
 package providee
 
+import "fuxi/core"
+
 type ProvideeServiceConf interface {
+	core.ServiceConf
 	PVID() int16
 }
 

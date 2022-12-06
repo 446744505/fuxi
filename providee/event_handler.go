@@ -18,6 +18,8 @@ func (self *ProvideeEventHandler) Init() {
 func (self *ProvideeEventHandler) OnSessionAdd(session core.Session) {
 	bind := &msg.BindPvid{}
 	service := session.Port().Service()
-	bind.PVID = service.(ProvideeServiceConf).PVID()
+	conf := service.(ProvideeServiceConf)
+	bind.PVID = conf.PVID()
+	bind.Name = conf.Name()
 	session.Send(bind)
 }

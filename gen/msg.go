@@ -21,6 +21,7 @@ func (self PDispatch) ID() int16 {
 type BindPvid struct {
 	core.CoreMsg `binary:"-"`
 	PVID int16
+	Name string
 }
 
 func (self BindPvid) ID() int16 {

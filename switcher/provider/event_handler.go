@@ -15,3 +15,7 @@ func (self *ProviderEventHandler) Init() {
 	self.RegisterMsg(&msg.UnBindPvid{}, self.OnUnBindPvid)
 }
 
+func (self *ProviderEventHandler) OnSessionRemoved(session core.Session) {
+	Provider.RemoveSession(session)
+}
+

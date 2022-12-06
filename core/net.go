@@ -2,7 +2,8 @@ package core
 
 import (
 	"github.com/davyxu/cellnet/peer"
-	"sync"
+	"os"
+	"os/signal"
 )
 
 type ServiceCreateFunc func() Service
@@ -18,7 +19,7 @@ type Net interface {
 type CoreNet struct {
 	peer.CoreRunningTag
 	services []Service
-	signal sync.WaitGroup
+	signal chan os.Signal
 }
 
 func (self *CoreNet) Start() {
@@ -53,10 +54,8 @@ func (self *CoreNet) NewService(creater ServiceCreateFunc) Service {
 }
 
 func (self *CoreNet) Wait() {
-	self.signal.Add(1)
-	self.signal.Wait()
-}
-
-func (self *CoreNet) Exit() {
-	self.signal.Done()
+	self.signal = make(chan os.Signal)
+	signal.Notify(self.signal, os.Interrupt, os.Kill)
+	<- self.signal
+	self.Stop()
 }

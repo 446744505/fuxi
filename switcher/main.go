@@ -17,7 +17,6 @@ func main()  {
 	})
 	s.Start()
 	s.Wait()
-	s.Stop()
 }
 
 type Switcher struct {
