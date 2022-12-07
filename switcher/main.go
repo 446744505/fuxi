@@ -8,7 +8,7 @@ import (
 )
 
 func main()  {
-	s := &Switcher{}
+	s := &switcher{}
 	s.NewService(func() core.Service {
 		return linker.NewLinker()
 	})
@@ -19,6 +19,6 @@ func main()  {
 	s.Wait()
 }
 
-type Switcher struct {
+type switcher struct {
 	core.CoreNet
 }
