@@ -1,12 +1,20 @@
 package internal
 
-import "fuxi/core"
+import (
+	"fuxi/core"
+	"fuxi/providee"
+)
+
+var GS *gs
 
 type gs struct {
-	core.CoreNet
+	core.NetControlImpl
 }
 
 func NewGs() *gs {
-	g := &gs{}
-	return g
+	GS := &gs{}
+	p := providee.NewProvidee(1, "gs")
+	p.SetEventHandler(&gsEventHandler{})
+	GS.AddService(p)
+	return GS
 }

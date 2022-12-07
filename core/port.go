@@ -15,8 +15,7 @@ const (
 )
 
 type Port interface {
-	Start()
-	Stop()
+	Controler
 	SetService(service Service)
 	Service() Service
 }

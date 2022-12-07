@@ -17,12 +17,8 @@ type provider struct {
 func NewProvider() *provider {
 	Provider = &provider{}
 	Provider.SetName("provider")
-	Provider.NewPort(func() core.Port {
-		return core.NewAcceptor("127.0.0.1", 8088)
-	})
-	Provider.NewEventHandler(func() core.EventHandler {
-		return &ProviderEventHandler{}
-	})
+	Provider.SetEventHandler(&ProviderEventHandler{})
+	core.ServiceAddPort(Provider, core.NewAcceptor("127.0.0.1", 8088))
 	return Provider
 }
 
@@ -30,13 +26,13 @@ func (self *provider) BindProvidee(pvid int16, name string, session core.Session
 	if self.providees == nil {
 		self.providees = make(map[int16]core.Session)
 	}
-	Log.Infof("bind providee %d[%s] %s", pvid, name, session)
+	Log.Infof("bind providee [%d] [%s] [%s]", pvid, name, session)
 	self.providees[pvid] = session
 }
 
 func (self *provider) UnBindProvidee(pvid int16) {
 	if pvid > 0 && self.providees != nil {
-		Log.Infof("unbind providee %d", pvid)
+		Log.Infof("unbind providee [%d]", pvid)
 		delete(self.providees, pvid)
 	}
 }

@@ -1,15 +1,20 @@
 package internal
 
-import "fuxi/providee"
+import (
+	"fuxi/core"
+	"fuxi/providee"
+)
 
 var Map *mmap
 
 type mmap struct {
-	providee.Providee
+	core.NetControlImpl
 }
 
 func NewMap() *mmap {
 	Map := &mmap{}
-	providee.NewProvidee(2, "map")
+	p := providee.NewProvidee(2, "map")
+	p.SetEventHandler(&mapEventHandler{})
+	Map.AddService(p)
 	return Map
 }

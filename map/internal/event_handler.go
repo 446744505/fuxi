@@ -1,11 +1,13 @@
 package internal
 
-import "fuxi/switcher/provider"
+import (
+	"fuxi/providee"
+)
 
 type mapEventHandler struct {
-	provider.ProviderEventHandler
+	providee.ProvideeEventHandler
 }
 
 func (self *mapEventHandler) Init() {
-	self.ProviderEventHandler.Init()
+	self.ProvideeEventHandler.Init()
 }

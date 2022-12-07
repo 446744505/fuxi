@@ -1,9 +1,11 @@
 package main
 
-import "fuxi/providee"
+import (
+	"fuxi/gs/internal"
+)
 
 func main() {
-	p := providee.NewProvidee(1, "gs")
-	p.Start()
-	p.Wait()
+	g := internal.NewGs()
+	g.Start()
+	g.Wait()
 }

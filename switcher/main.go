@@ -9,16 +9,12 @@ import (
 
 func main()  {
 	s := &switcher{}
-	s.NewService(func() core.Service {
-		return linker.NewLinker()
-	})
-	s.NewService(func() core.Service {
-		return provider.NewProvider()
-	})
+	s.AddService(provider.NewProvider())
+	s.AddService(linker.NewLinker())
 	s.Start()
 	s.Wait()
 }
 
 type switcher struct {
-	core.CoreNet
+	core.NetControlImpl
 }

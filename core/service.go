@@ -1,13 +1,9 @@
 package core
 
-type PortCreateFunc func() Port
-type EventHandlerCreateFunc func() EventHandler
-
 type Service interface {
-	Start()
-	Stop()
-	NewPort(creater PortCreateFunc) Port
-	NewEventHandler(creater EventHandlerCreateFunc) EventHandler
+	Controler
+	addPort(port Port)
+	SetEventHandler(handler EventHandler)
 	EventHandler() EventHandler
 }
 
@@ -18,6 +14,7 @@ type CoreService struct {
 }
 
 func (self *CoreService) Start() {
+	self.handler.Init()
 	for _, port := range self.ports {
 		port.Start()
 	}
@@ -29,19 +26,19 @@ func (self *CoreService) Stop() {
 	}
 }
 
-func (self *CoreService) NewPort(creater PortCreateFunc) Port {
-	t := creater()
-	t.SetService(self)
-	self.ports = append(self.ports, t)
-	return t
+func (self *CoreService) addPort(port Port) {
+	self.ports = append(self.ports, port)
 }
 
 func (self *CoreService) EventHandler() EventHandler {
 	return self.handler
 }
 
-func (self *CoreService) NewEventHandler(creater EventHandlerCreateFunc) EventHandler {
-	self.handler = creater()
-	self.handler.Init()
-	return self.handler
+func (self *CoreService) SetEventHandler(handler EventHandler) {
+	self.handler = handler
+}
+
+func ServiceAddPort(service Service, port Port) {
+	port.SetService(service)
+	service.addPort(port)
 }

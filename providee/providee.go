@@ -5,28 +5,20 @@ import (
 )
 
 type Providee struct {
-	core.CoreNet
-}
-
-type ProvideeService struct {
 	core.CoreService
 	ProvideeServiceConfProp
 }
 
 func NewProvidee(pvid int16, name string) *Providee {
 	p := &Providee{}
-	s := p.NewService(func() core.Service {
-		s := &ProvideeService{}
-		s.pvid = pvid
-		s.SetName(name)
-		return s
-	})
-	s.NewEventHandler(func() core.EventHandler {
-		return &ProvideeEventHandler{}
-	})
-	//todo 从etcd拿所有的provider
-	s.NewPort(func() core.Port {
-		return core.NewConnector("127.0.0.1", 8088)
-	}).SetService(s) //fixme
+	p.pvid = pvid
+	p.SetName(name)
 	return p
+}
+
+func (self *Providee) Start() {
+	//todo 从etcd拿所有的provider
+	port := core.NewConnector("127.0.0.1", 8088)
+	core.ServiceAddPort(self, port)
+	self.CoreService.Start()
 }

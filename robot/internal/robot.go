@@ -3,20 +3,14 @@ package internal
 import "fuxi/core"
 
 type robot struct {
-	core.CoreNet
-}
-
-type robotService struct {
-	core.CoreService
+	core.NetControlImpl
+	service core.CoreService
 }
 
 func NewRobot() *robot {
 	r := &robot{}
-	s := r.NewService(func() core.Service {
-		return &robotService{}
-	})
-	s.NewPort(func() core.Port {
-		return core.NewConnector("127.0.0.1", 8080)
-	})
+	r.AddService(&r.service)
+	r.service.SetEventHandler(&robotEventHandler{})
+	core.ServiceAddPort(&r.service, core.NewConnector("127.0.0.1", 8080))
 	return r
 }
