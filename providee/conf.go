@@ -4,13 +4,13 @@ import "fuxi/core"
 
 type ProvideeServiceConf interface {
 	core.ServiceConf
-	PVID() int16
+	PVID() int32
 }
 
 type ProvideeServiceConfProp struct {
-	pvid int16
+	pvid int32
 }
 
-func (self *ProvideeServiceConfProp) PVID() int16 {
+func (self *ProvideeServiceConfProp) PVID() int32 {
 	return self.pvid
 }

@@ -11,7 +11,7 @@ type EventHandler interface {
 }
 
 type CoreEventHandler struct {
-	msgHandlers map[int16]MsgHandler
+	msgHandlers map[int32]MsgHandler
 }
 
 func (self *CoreEventHandler) OnSessionAdd(session Session) {
@@ -31,7 +31,7 @@ func (self *CoreEventHandler) OnRcvMessage(msg Msg) {
 func (self *CoreEventHandler) RegisterMsg(msg Msg, handler MsgHandler) {
 	if handler != nil {
 		if self.msgHandlers == nil {
-			self.msgHandlers = make(map[int16]MsgHandler)
+			self.msgHandlers = make(map[int32]MsgHandler)
 		}
 		self.msgHandlers[msg.ID()] = handler
 	}

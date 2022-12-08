@@ -2,7 +2,7 @@ package linker
 
 import (
 	"fuxi/core"
-	msg "fuxi/gen"
+	"fuxi/msg"
 )
 
 type LinkerEventHandler struct {

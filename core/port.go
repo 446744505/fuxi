@@ -29,7 +29,7 @@ type CorePort struct {
 func (self *CorePort) Start() {
 	self.peer = peer.NewGenericPeer(self.typ, "", self.HostPortString(), nil)
 	handler := self.Service().EventHandler()
-	proc.BindProcessorHandler(self.peer, "tcp.ltv", func(ev cellnet.Event) {
+	proc.BindProcessorHandler(self.peer, "fxtcp.ltv", func(ev cellnet.Event) {
 		ctx := self.peer.(cellnet.ContextSet)
 		switch msg := ev.Message().(type) {
 		case *cellnet.SessionAccepted, *cellnet.SessionConnected:
@@ -40,7 +40,10 @@ func (self *CorePort) Start() {
 		case *cellnet.SessionClosed:
 			if val, ok := ctx.GetContext(CtxTypeSession); ok {
 				session := val.(Session)
+				Log.Infof("session %s closed, reason: %s", session, msg.Reason)
 				handler.OnSessionRemoved(session)
+			} else {
+				Log.Warnf("session closed, reason: %s", msg.Reason)
 			}
 		case Msg:
 			if val, ok := ctx.GetContext(CtxTypeSession); ok {

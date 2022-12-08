@@ -2,7 +2,7 @@ package provider
 
 import (
 	"fuxi/core"
-	msg "fuxi/gen"
+	"fuxi/msg"
 )
 
 func (self *ProviderEventHandler) OnPDispatch(p core.Msg) {

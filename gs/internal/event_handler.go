@@ -1,6 +1,9 @@
 package internal
 
-import "fuxi/providee"
+import (
+	"fuxi/msg"
+	"fuxi/providee"
+)
 
 type gsEventHandler struct {
 	providee.ProvideeEventHandler
@@ -8,4 +11,5 @@ type gsEventHandler struct {
 
 func (self *gsEventHandler) Init() {
 	self.ProvideeEventHandler.Init()
+	self.RegisterMsg(&msg.MapNtf{}, self.OnMapNtf)
 }

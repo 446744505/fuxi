@@ -12,7 +12,7 @@ type mmap struct {
 }
 
 func NewMap() *mmap {
-	Map := &mmap{}
+	Map = &mmap{}
 	p := providee.NewProvidee(2, "map")
 	p.SetEventHandler(&mapEventHandler{})
 	Map.AddService(p)

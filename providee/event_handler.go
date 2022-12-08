@@ -2,7 +2,7 @@ package providee
 
 import (
 	"fuxi/core"
-	msg "fuxi/gen"
+	"fuxi/msg"
 )
 
 type ProvideeEventHandler struct {
@@ -16,6 +16,7 @@ func (self *ProvideeEventHandler) Init() {
 }
 
 func (self *ProvideeEventHandler) OnSessionAdd(session core.Session) {
+	Providee.OnAddSession(session)
 	bind := &msg.BindPvid{}
 	service := session.Port().Service()
 	conf := service.(ProvideeServiceConf)

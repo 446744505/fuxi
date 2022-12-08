@@ -7,7 +7,7 @@ import (
 )
 
 type Msg interface {
-	ID() int16
+	ID() int32
 	SetSession(session Session)
 	Session() Session
 }
@@ -26,7 +26,7 @@ func (self *CoreMsg) SetSession(session Session) {
 
 func RegisterMsg(msg Msg) {
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
-		Codec: codec.MustGetCodec("binary"),
+		Codec: codec.MustGetCodec("protoplus"),
 		Type:  reflect.TypeOf(msg).Elem(),
 		ID:    int(msg.ID()),
 	})

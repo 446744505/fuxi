@@ -11,7 +11,7 @@ var Provider *provider
 type provider struct {
 	core.CoreService
 
-	providees map[int16]core.Session
+	providees map[int32]core.Session
 }
 
 func NewProvider() *provider {
@@ -22,15 +22,15 @@ func NewProvider() *provider {
 	return Provider
 }
 
-func (self *provider) BindProvidee(pvid int16, name string, session core.Session) {
+func (self *provider) BindProvidee(pvid int32, name string, session core.Session) {
 	if self.providees == nil {
-		self.providees = make(map[int16]core.Session)
+		self.providees = make(map[int32]core.Session)
 	}
 	Log.Infof("bind providee [%d] [%s] [%s]", pvid, name, session)
 	self.providees[pvid] = session
 }
 
-func (self *provider) UnBindProvidee(pvid int16) {
+func (self *provider) UnBindProvidee(pvid int32) {
 	if pvid > 0 && self.providees != nil {
 		Log.Infof("unbind providee [%d]", pvid)
 		delete(self.providees, pvid)
@@ -38,7 +38,7 @@ func (self *provider) UnBindProvidee(pvid int16) {
 }
 
 func (self *provider) RemoveSession(session core.Session) {
-	var deleteId int16
+	var deleteId int32
 	for pvid, tmp := range self.providees {
 		if tmp.ID() == session.ID() {
 			deleteId = pvid
