@@ -2,7 +2,6 @@ package core
 
 import (
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/util"
 	"io"
 	"net"
 )
@@ -53,7 +52,7 @@ func (self CoreMessageTransmitter) OnSendMessage(ses cellnet.Session, msg interf
 	// 有写超时时，设置超时
 	opt.ApplySocketWriteTimeout(writer.(net.Conn), func() {
 
-		err = util.SendLTVPacket(writer, ses.(cellnet.ContextSet), msg)
+		err = SendLTVPacket(writer, ses.(cellnet.ContextSet), msg)
 
 	})
 

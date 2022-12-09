@@ -35,6 +35,7 @@ func (self *CoreNet) AddService(service Service) {
 }
 
 func init() {
+	RegisterMsg(&Dispatch{})
 	proc.RegisterProcessor("fxtcp.ltv", func(bundle proc.ProcessorBundle, userCallback cellnet.EventCallback) {
 		bundle.SetTransmitter(new(CoreMessageTransmitter))
 		bundle.SetHooker(new(tcp.MsgHooker))

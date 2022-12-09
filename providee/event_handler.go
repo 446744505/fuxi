@@ -10,7 +10,6 @@ type ProvideeEventHandler struct {
 }
 
 func (self *ProvideeEventHandler) Init() {
-	self.RegisterMsg(&msg.PDispatch{}, nil)
 	self.RegisterMsg(&msg.BindPvid{}, nil)
 	self.RegisterMsg(&msg.UnBindPvid{}, nil)
 }
@@ -23,4 +22,8 @@ func (self *ProvideeEventHandler) OnSessionAdd(session core.Session) {
 	bind.PVID = conf.PVID()
 	bind.Name = conf.Name()
 	session.Send(bind)
+}
+
+func (self *ProvideeEventHandler) OnSessionRemoved(session core.Session) {
+	Providee.OnRemoveSession(session)
 }

@@ -5,8 +5,15 @@ import (
 	"fuxi/msg"
 )
 
-func (self *ProviderEventHandler) OnPDispatch(p core.Msg) {
+func OnDispatch(p *core.Dispatch) {
+	if p.ToType() == core.MsgToProvidee {
+		toPVID := int32(p.ToID())
+		if sess, ok := Provider.providees[toPVID]; ok {
+			sess.SendRaw(p.MsgId, p.MsgData)
+		}
+	} else if p.ToType() == core.MsgToClient {
 
+	}
 }
 
 func (self *ProviderEventHandler) OnBindPvid(p core.Msg) {

@@ -12,6 +12,7 @@ func NewLinker() *linker {
 	Linker = &linker{}
 	Linker.SetName("linker")
 	Linker.SetEventHandler(&LinkerEventHandler{})
+	Linker.SetDispatcherHandler(OnDispatch)
 	core.ServiceAddPort(Linker, core.NewAcceptor("127.0.0.1", 8080))
 	return Linker
 }

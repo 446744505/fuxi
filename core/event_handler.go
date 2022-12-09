@@ -14,12 +14,13 @@ type CoreEventHandler struct {
 	msgHandlers map[int32]MsgHandler
 }
 
-func (self *CoreEventHandler) OnSessionAdd(session Session) {
+func (self *CoreEventHandler) Init() {
+}
 
+func (self *CoreEventHandler) OnSessionAdd(session Session) {
 }
 
 func (self *CoreEventHandler) OnSessionRemoved(session Session) {
-
 }
 
 func (self *CoreEventHandler) OnRcvMessage(msg Msg) {

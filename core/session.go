@@ -6,11 +6,16 @@ import (
 	"net"
 )
 
+type SessionCreater func(raw cellnet.Session) Session
+
 type Session interface {
 	ID() int64
 	Send(msg Msg)
+	SendRaw(msgId int, msgData []byte)
 	SetPort(port Port)
 	Port() Port
+	SetRaw(raw cellnet.Session)
+	Raw() cellnet.Session
 }
 
 type CoreSession struct {
@@ -18,12 +23,15 @@ type CoreSession struct {
 	port Port
 }
 
-func NewSession(raw cellnet.Session) Session {
-	return &CoreSession{raw: raw}
-}
-
 func (self *CoreSession) Send(msg Msg) {
 	self.raw.Send(msg)
+}
+
+func (self *CoreSession) SendRaw(msgId int, msgData []byte) {
+	self.raw.Send(&cellnet.RawPacket{
+		MsgData: msgData,
+		MsgID: msgId,
+	})
 }
 
 func (self *CoreSession) ID() int64 {
@@ -36,6 +44,14 @@ func (self *CoreSession) SetPort(port Port) {
 
 func (self *CoreSession) Port() Port {
 	return self.port
+}
+
+func (self *CoreSession) Raw() cellnet.Session {
+	return self.raw
+}
+
+func (self *CoreSession) SetRaw(raw cellnet.Session) {
+	self.raw = raw
 }
 
 func (self *CoreSession) String() string {

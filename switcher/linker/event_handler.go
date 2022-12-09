@@ -2,7 +2,6 @@ package linker
 
 import (
 	"fuxi/core"
-	"fuxi/msg"
 )
 
 type LinkerEventHandler struct {
@@ -10,5 +9,5 @@ type LinkerEventHandler struct {
 }
 
 func (self *LinkerEventHandler) Init() {
-	self.RegisterMsg(&msg.Dispatch{}, self.OnDispatch)
+
 }

@@ -28,20 +28,22 @@ type CorePort struct {
 
 func (self *CorePort) Start() {
 	self.peer = peer.NewGenericPeer(self.typ, "", self.HostPortString(), nil)
-	handler := self.Service().EventHandler()
+	evtHandler := self.Service().EventHandler()
+	creater := self.Service().SessionCreater()
+	dipHandler := self.Service().DispatchHandler()
 	proc.BindProcessorHandler(self.peer, "fxtcp.ltv", func(ev cellnet.Event) {
 		ctx := self.peer.(cellnet.ContextSet)
 		switch msg := ev.Message().(type) {
 		case *cellnet.SessionAccepted, *cellnet.SessionConnected:
-			session := NewSession(ev.Session())
+			session := creater(ev.Session())
 			session.SetPort(self)
-			handler.OnSessionAdd(session)
+			evtHandler.OnSessionAdd(session)
 			ctx.SetContext(CtxTypeSession, session)
 		case *cellnet.SessionClosed:
 			if val, ok := ctx.GetContext(CtxTypeSession); ok {
 				session := val.(Session)
 				Log.Infof("session %s closed, reason: %s", session, msg.Reason)
-				handler.OnSessionRemoved(session)
+				evtHandler.OnSessionRemoved(session)
 			} else {
 				Log.Warnf("session closed, reason: %s", msg.Reason)
 			}
@@ -49,7 +51,11 @@ func (self *CorePort) Start() {
 			if val, ok := ctx.GetContext(CtxTypeSession); ok {
 				session := val.(Session)
 				msg.SetSession(session)
-				handler.OnRcvMessage(msg)
+				if dispatch, ok := msg.(*Dispatch); ok {
+					dipHandler(dispatch)
+				} else {
+					evtHandler.OnRcvMessage(msg)
+				}
 			}
 		}
 	})

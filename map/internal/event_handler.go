@@ -21,5 +21,5 @@ func (self *mapEventHandler) OnSessionAdd(session core.Session) {
 	conf := service.(providee.ProvideeServiceConf)
 	ntf := &msg.MapNtf{}
 	ntf.PVID = conf.PVID()
-	session.Send(ntf)
+	providee.Providee.SendToProvidee(1, ntf)
 }
