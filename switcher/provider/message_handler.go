@@ -3,25 +3,25 @@ package provider
 import (
 	"fuxi/core"
 	"fuxi/msg"
+	"fuxi/switcher/linker/util"
 )
 
 func OnDispatch(p *core.Dispatch) {
 	if p.ToType() == core.MsgToProvidee {
-		toPVID := int32(p.ToID())
-		if sess, ok := Provider.providees[toPVID]; ok {
-			sess.SendRaw(p.MsgId, p.MsgData)
-		}
+		util.DispatchToProvidee(p)
 	} else if p.ToType() == core.MsgToClient {
-
+		util.DispatchToClient(p)
+	} else {
+		Log.Errorln("err dispatch msg, toType: %d msgId: %d", p.ToType(), p.MsgId)
 	}
 }
 
-func (self *ProviderEventHandler) OnBindPvid(p core.Msg) {
+func (self *providerEventHandler) OnBindPvid(p core.Msg) {
 	bind := p.(*msg.BindPvid)
 	Provider.BindProvidee(bind.PVID, bind.Name, p.Session())
 }
 
-func (self *ProviderEventHandler) OnUnBindPvid(p core.Msg) {
+func (self *providerEventHandler) OnUnBindPvid(p core.Msg) {
 	unbind := p.(*msg.UnBindPvid)
 	Provider.UnBindProvidee(unbind.PVID)
 }

@@ -93,7 +93,7 @@ type Dispatch struct {
 }
 
 func (self Dispatch) ID() int32 {
-	return 1
+	return -1
 }
 
 func (self *Dispatch) Marshal(buffer *proto.Buffer) error {

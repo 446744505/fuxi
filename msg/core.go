@@ -12,7 +12,7 @@ type BindPvid struct {
 }
 
 func (self BindPvid) ID() int32 {
-	return 3
+	return 1
 }
 
 func (self *BindPvid) Marshal(buffer *proto.Buffer) error {
@@ -44,7 +44,7 @@ type UnBindPvid struct {
 }
 
 func (self UnBindPvid) ID() int32 {
-	return 4
+	return 2
 }
 
 func (self *UnBindPvid) Marshal(buffer *proto.Buffer) error {

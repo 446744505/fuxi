@@ -1,6 +1,11 @@
 package internal
 
-import "fuxi/core"
+import (
+	"fuxi/core"
+	"github.com/davyxu/golog"
+)
+
+var Log = golog.New("robot")
 
 type robot struct {
 	core.NetControlImpl

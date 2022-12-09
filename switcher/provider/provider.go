@@ -2,6 +2,7 @@ package provider
 
 import (
 	"fuxi/core"
+	"fuxi/switcher/linker/util"
 	"github.com/davyxu/golog"
 	"sync"
 )
@@ -17,9 +18,11 @@ type provider struct {
 }
 
 func NewProvider() *provider {
-	Provider = &provider{}
+	Provider = &provider{
+		providees: make(map[int32]core.Session),
+	}
 	Provider.SetName("provider")
-	Provider.SetEventHandler(&ProviderEventHandler{})
+	Provider.SetEventHandler(&providerEventHandler{})
 	Provider.SetDispatcherHandler(OnDispatch)
 	core.ServiceAddPort(Provider, core.NewAcceptor("127.0.0.1", 8088))
 	return Provider
@@ -28,9 +31,6 @@ func NewProvider() *provider {
 func (self *provider) BindProvidee(pvid int32, name string, session core.Session) {
 	self.lock.Lock()
 	defer self.lock.Unlock()
-	if self.providees == nil {
-		self.providees = make(map[int32]core.Session)
-	}
 	Log.Infof("bind providee [%d] [%s] [%s]", pvid, name, session)
 	self.providees[pvid] = session
 }
@@ -53,4 +53,34 @@ func (self *provider) RemoveSession(session core.Session) {
 		}
 	}
 	self.UnBindProvidee(deleteId)
+}
+
+func (self *provider) GetProvidee(pvid int32) core.Session {
+	self.lock.RLock()
+	defer self.lock.RUnlock()
+	if sess, ok := self.providees[pvid]; ok {
+		return sess
+	}
+	return nil
+}
+
+func init() {
+	util.DispatchToProvidee = func(dispatch *core.Dispatch) {
+		toPVID := int32(dispatch.ToID())
+		prov := Provider.GetProvidee(toPVID)
+		if prov == nil {
+			Log.Errorf("dispatch not exist providee %d, msgId: %d session: %s",
+				toPVID, dispatch.MsgId, dispatch.Session())
+			return
+		}
+		prov.SendRaw(dispatch.MsgId, dispatch.MsgData)
+	}
+	util.SendToProvidee = func(pvid int32, msg core.Msg) {
+		prov := Provider.GetProvidee(pvid)
+		if prov == nil {
+			Log.Errorf("send not exist providee %d, msgId: %d", pvid, msg.ID())
+			return
+		}
+		prov.Send(msg)
+	}
 }

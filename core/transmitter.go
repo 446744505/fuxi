@@ -32,7 +32,9 @@ func (self CoreMessageTransmitter) OnRecvMessage(ses cellnet.Session) (msg inter
 		opt.ApplySocketReadTimeout(conn, func() {
 
 			msg, err = RecvLTVPacket(reader, opt.MaxPacketSize())
-
+			if err != nil {
+				Log.Errorf("receive msg err: %v", err)
+			}
 		})
 	}
 
@@ -53,7 +55,9 @@ func (self CoreMessageTransmitter) OnSendMessage(ses cellnet.Session, msg interf
 	opt.ApplySocketWriteTimeout(writer.(net.Conn), func() {
 
 		err = SendLTVPacket(writer, ses.(cellnet.ContextSet), msg)
-
+		if err != nil {
+			Log.Errorf("send msg err: %v", err)
+		}
 	})
 
 	return

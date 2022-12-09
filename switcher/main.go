@@ -2,7 +2,6 @@ package main
 
 import (
 	"fuxi/core"
-	_ "fuxi/msg"
 	"fuxi/switcher/linker"
 	"fuxi/switcher/provider"
 )
