@@ -59,6 +59,15 @@ func (self *CorePort) Start() {
 			}
 		}
 	})
+
+	/* 要重连就放开这里
+	if reconnector, ok := self.peer.(interface{
+		SetReconnectDuration(time.Duration)
+	}); ok {
+		reconnector.SetReconnectDuration(5 * time.Second)
+	}
+	 */
+
 	self.peer.Start()
 }
 

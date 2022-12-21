@@ -2,8 +2,11 @@ package provider
 
 import (
 	"fuxi/core"
+	"fuxi/switcher"
 	"fuxi/switcher/linker/util"
 	"github.com/davyxu/golog"
+	"strconv"
+	"strings"
 	"sync"
 )
 
@@ -24,7 +27,13 @@ func NewProvider() *provider {
 	Provider.SetName("provider")
 	Provider.SetEventHandler(&providerEventHandler{})
 	Provider.SetDispatcherHandler(OnDispatch)
-	core.ServiceAddPort(Provider, core.NewAcceptor("127.0.0.1", 8088))
+
+	url := switcher.Args.String("provider")
+	arr := strings.Split(url, ":")
+	host := arr[0]
+	var port, _ = strconv.Atoi(arr[1])
+	core.ServiceAddPort(Provider, core.NewAcceptor(host, port))
+	core.ETCD.Put("provider/" + url, url)
 	return Provider
 }
 

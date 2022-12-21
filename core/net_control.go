@@ -4,6 +4,7 @@ import (
 	"github.com/davyxu/cellnet/peer"
 	"os"
 	"os/signal"
+	"syscall"
 )
 
 type NetControl interface {
@@ -49,7 +50,7 @@ func (self *NetControlImpl) Stop() {
 
 func (self *NetControlImpl) Wait() {
 	self.signal = make(chan os.Signal)
-	signal.Notify(self.signal, os.Interrupt, os.Kill)
+	signal.Notify(self.signal, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
 	<- self.signal
 	self.Stop()
 }
