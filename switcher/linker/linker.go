@@ -2,7 +2,6 @@ package linker
 
 import (
 	"fuxi/core"
-	"fuxi/switcher"
 	"fuxi/switcher/linker/util"
 	"github.com/davyxu/golog"
 	"strconv"
@@ -28,7 +27,7 @@ func NewLinker() *linker {
 	Linker.SetEventHandler(&linkerEventHandler{})
 	Linker.SetDispatcherHandler(OnDispatch)
 
-	url := switcher.Args.String("linker")
+	url := core.Args.Get("linker")
 	arr := strings.Split(url, ":")
 	host := arr[0]
 	var port, _ = strconv.Atoi(arr[1])

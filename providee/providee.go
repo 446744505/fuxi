@@ -19,10 +19,6 @@ type providee struct {
 	providerList []core.Session
 }
 
-type provideeWatcher struct {
-	providee *providee
-}
-
 func NewProvidee(pvid int32, name string) *providee {
 	Providee = &providee{
 		providerMap: make(map[int64]core.Session),
@@ -34,7 +30,7 @@ func NewProvidee(pvid int32, name string) *providee {
 }
 
 func (self *providee) Start() {
-	core.ETCD.Watch("provider", &provideeWatcher{providee: self})
+	core.ETCD.Watch("provider", self)
 	self.CoreService.Start()
 }
 
@@ -83,15 +79,15 @@ func (self *providee) getOneProvider() core.Session {
 	return self.providerList[i]
 }
 
-func (self *provideeWatcher) OnAdd(key, val string) {
+func (self *providee) OnAdd(key, val string) {
 	arr := strings.Split(val, ":")
 	host := arr[0]
 	port, _ := strconv.Atoi(arr[1])
 	porter := core.NewConnector(host, port)
-	core.ServiceAddPort(self.providee, porter)
+	core.ServiceAddPort(self, porter)
 	porter.Start()
 }
 
-func (self *provideeWatcher) OnDelete(key string) {
+func (self *providee) OnDelete(key, val string) {
 
 }

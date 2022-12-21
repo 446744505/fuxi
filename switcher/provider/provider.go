@@ -2,7 +2,6 @@ package provider
 
 import (
 	"fuxi/core"
-	"fuxi/switcher"
 	"fuxi/switcher/linker/util"
 	"github.com/davyxu/golog"
 	"strconv"
@@ -28,7 +27,7 @@ func NewProvider() *provider {
 	Provider.SetEventHandler(&providerEventHandler{})
 	Provider.SetDispatcherHandler(OnDispatch)
 
-	url := switcher.Args.String("provider")
+	url := core.Args.Get("provider")
 	arr := strings.Split(url, ":")
 	host := arr[0]
 	var port, _ = strconv.Atoi(arr[1])

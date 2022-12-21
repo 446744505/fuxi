@@ -12,7 +12,7 @@ var ETCD *etcd
 
 type OnWatcher interface {
 	OnAdd(key, val string)
-	OnDelete(key string)
+	OnDelete(key, val string)
 }
 
 type node struct {
@@ -204,9 +204,9 @@ func (self *node) put(key, val string) {
 }
 
 func (self *node) delete(key string) {
-	if _, ok := self.kvs[key]; ok {
+	if val, ok := self.kvs[key]; ok {
 		delete(self.kvs, key)
-		self.OnDelete(key)
+		self.OnDelete(key, val)
 		Log.Infof("etcd delete node key %s", key)
 	}
 }

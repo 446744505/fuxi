@@ -17,9 +17,9 @@ func (self *gsEventHandler) Init() {
 
 func (self *gsEventHandler) RegisterSvr() {
 	self.RegisterMsg(&msg.LEnterGame{}, self.OnLEnterGame)
-	self.RegisterMsg(&msg.SEnterGame{}, nil)
+	self.RegisterMsg(&msg.GEnterMap{}, nil)
 }
 
 func (self *gsEventHandler) RegisterClient() {
-	self.RegisterMsg(&msg.MapNtf{}, self.OnMapNtf)
+	self.RegisterMsg(&msg.SEnterGame{}, nil)
 }

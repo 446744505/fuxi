@@ -1,11 +1,15 @@
 package internal
 
 import (
+	"fmt"
 	"fuxi/core"
 	"fuxi/providee"
+	"github.com/davyxu/golog"
+	"strconv"
 )
 
 var Map *mmap
+var Log = golog.New("map")
 
 type mmap struct {
 	core.NetControlImpl
@@ -13,8 +17,12 @@ type mmap struct {
 
 func NewMap() *mmap {
 	Map = &mmap{}
-	p := providee.NewProvidee(2, "map")
+	pvid, _ := strconv.Atoi(core.Args.Get("pvid"))
+	p := providee.NewProvidee(int32(pvid), "map")
 	p.SetEventHandler(&mapEventHandler{})
 	Map.AddService(p)
+
+	core.ETCD.Put(fmt.Sprintf("map/%v", pvid), fmt.Sprintf("%v", pvid))
+
 	return Map
 }

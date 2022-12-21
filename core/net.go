@@ -12,10 +12,11 @@ var Log = golog.New("net")
 type Net interface {
 	Controler
 	AddService(service Service)
+	GetService(name string) Service
 }
 
 type CoreNet struct {
-	services []Service
+	services map[string]Service
 }
 
 func (self *CoreNet) Start() {
@@ -31,7 +32,17 @@ func (self *CoreNet) Stop() {
 }
 
 func (self *CoreNet) AddService(service Service) {
-	self.services = append(self.services, service)
+	if self.services == nil {
+		self.services = make(map[string]Service)
+	}
+	self.services[service.Name()] = service
+}
+
+func (self *CoreNet) GetService(name string) Service {
+	if svr, ok := self.services[name]; ok {
+		return svr
+	}
+	return nil
 }
 
 func init() {

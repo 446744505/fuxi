@@ -7,6 +7,7 @@ type DispatchHandler func(msg *Dispatch)
 type Service interface {
 	Controler
 	ServiceBundle
+	Name() string
 	addPort(port Port)
 }
 

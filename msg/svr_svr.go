@@ -5,31 +5,41 @@ import (
 	"github.com/davyxu/protoplus/proto"
 )
 
-type MapNtf struct {
+type GEnterMap struct {
 	core.CoreMsg `binary:"-"`
-	PVID int32
+	RoleId int64
+	ClientSid int64
+	GsPvid int32
 }
 
-func (self *MapNtf) ID() int32 {
+func (self *GEnterMap) ID() int32 {
 	return 1001
 }
 
-func (self *MapNtf) Marshal(buffer *proto.Buffer) error {
-	proto.MarshalInt32(buffer, 0, self.PVID)
+func (self *GEnterMap) Marshal(buffer *proto.Buffer) error {
+	proto.MarshalInt64(buffer, 0, self.RoleId)
+	proto.MarshalInt64(buffer, 1, self.ClientSid)
+	proto.MarshalInt32(buffer, 2, self.GsPvid)
 	return nil
 }
 
-func (self *MapNtf) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
+func (self *GEnterMap) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
 	switch fieldIndex {
 	case 0:
-		return proto.UnmarshalInt32(buffer, wt, &self.PVID)
+		return proto.UnmarshalInt64(buffer, wt, &self.RoleId)
+	case 1:
+		return proto.UnmarshalInt64(buffer, wt, &self.ClientSid)
+	case 2:
+		return proto.UnmarshalInt32(buffer, wt, &self.GsPvid)
 	}
 
 	return proto.ErrUnknownField
 }
 
-func (self *MapNtf) Size() (ret int) {
-	ret += proto.SizeInt32(0, self.PVID)
+func (self *GEnterMap) Size() (ret int) {
+	ret += proto.SizeInt64(0, self.RoleId)
+	ret += proto.SizeInt64(1, self.ClientSid)
+	ret += proto.SizeInt32(2, self.GsPvid)
 	return
 }
 
