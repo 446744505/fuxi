@@ -29,7 +29,7 @@ func NewGs() *gs {
 	p.SetEventHandler(&gsEventHandler{})
 	GS.AddService(p)
 
-	core.ETCD.Put(fmt.Sprintf("gs/%v", pvid), fmt.Sprintf("%v", pvid))
+	core.ETCD.Put(fmt.Sprintf("gs/%v", pvid), fmt.Sprint(pvid))
 
 	return GS
 }

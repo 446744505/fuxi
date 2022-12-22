@@ -21,5 +21,6 @@ func main() {
 	r := internal.NewRobot()
 	r.Start()
 	r.Wait()
+	core.StopEtcd()
 }
 

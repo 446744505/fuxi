@@ -18,6 +18,7 @@ type Port interface {
 	Controler
 	SetService(service Service)
 	Service() Service
+	Name() string
 }
 
 type CorePort struct {
@@ -69,6 +70,10 @@ func (self *CorePort) Start() {
 	 */
 
 	self.peer.Start()
+}
+
+func (self *CorePort) Name() string {
+	return self.name
 }
 
 func (self *CorePort) Stop() {

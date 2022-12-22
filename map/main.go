@@ -22,4 +22,5 @@ func main() {
 	m := internal.NewMap()
 	m.Start()
 	m.Wait()
+	core.StopEtcd()
 }

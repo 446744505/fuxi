@@ -28,7 +28,7 @@ func (self *robot) OnAdd(key, val string) {
 	arr := strings.Split(val, ":")
 	host := arr[0]
 	port, _:= strconv.Atoi(arr[1])
-	porter := core.NewConnector(host, port)
+	porter := core.NewConnector(key, host, port)
 	core.ServiceAddPort(&self.service, porter)
 	porter.Start()
 }

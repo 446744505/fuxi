@@ -1,6 +1,9 @@
 package core
 
-import "github.com/davyxu/cellnet"
+import (
+	"github.com/davyxu/cellnet"
+	"sync"
+)
 
 type DispatchHandler func(msg *Dispatch)
 
@@ -14,7 +17,9 @@ type Service interface {
 type CoreService struct {
 	CoreServiceConf
 	CoreServiceBundle
-	ports []Port
+
+	lock sync.RWMutex
+	ports map[string]Port
 }
 
 type ServiceBundle interface {
@@ -34,19 +39,31 @@ type CoreServiceBundle struct {
 
 func (self *CoreService) Start() {
 	self.evtHandler.Init()
+	self.lock.RLock()
 	for _, port := range self.ports {
 		port.Start()
 	}
+	self.lock.RUnlock()
 }
 
 func (self *CoreService) Stop() {
+	self.lock.RLock()
 	for _, port := range self.ports {
 		port.Stop()
 	}
+	self.lock.RUnlock()
 }
 
 func (self *CoreService) addPort(port Port) {
-	self.ports = append(self.ports, port)
+	self.lock.Lock()
+	defer self.lock.Unlock()
+	if self.ports == nil {
+		self.ports = make(map[string]Port)
+	}
+	if old, ok := self.ports[port.Name()]; ok {
+		old.Stop()
+	}
+	self.ports[port.Name()] = port
 }
 
 func (self *CoreServiceBundle) EventHandler() EventHandler {

@@ -2,6 +2,8 @@ package core
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	"go.etcd.io/etcd/client/v3"
 	"sync"
@@ -20,11 +22,22 @@ type node struct {
 	kvs map[string]string
 }
 
+type pair struct {
+	isDelete bool
+	key string
+	val interface{}
+}
+
 type etcd struct {
 	conf clientv3.Config
+
+	closeSig chan bool
+
+	kvChan chan *pair
 	kvs map[string]string
 
-	lock sync.RWMutex
+	nodesChan chan *pair
+	lockNodes sync.Mutex
 	nodes map[string]*node
 
 	client        *clientv3.Client
@@ -42,39 +55,49 @@ func InitEtcd(addr []string) {
 
 	ETCD = &etcd{
 		conf: conf,
+		kvChan: make(chan *pair, 1000),
 		kvs: make(map[string]string),
+		nodesChan: make(chan *pair, 1000),
 		nodes: make(map[string]*node),
+		closeSig: make(chan bool),
 	}
-	go ETCD.init()
+	go ETCD.startWork()
 }
 
-func (self *etcd) Put(key, val string) {
-	self.kvs[key] = val
-	if self.client != nil {
-		self.put(key, val)
+func StopEtcd() {
+	ETCD.closeSig <- true
+}
+
+func (self *etcd) Put(key, val string) error {
+	select {
+	case self.kvChan <- &pair{key: key, val: val}:
+		return nil
+	default:
+		return errors.New("etcd kv chan is full")
 	}
 }
 
-func (self *etcd) Delete(key string) {
-	delete(self.kvs, key)
-	if self.client != nil {
-		self.delete(key)
+func (self *etcd) Delete(key string) error {
+	select {
+	case self.kvChan <- &pair{isDelete: true, key: key}:
+		return nil
+	default:
+		return errors.New("etcd kv chan is full")
 	}
 }
 
 func (self *etcd) Watch(prefix string, onWatcher OnWatcher) {
-	self.lock.Lock()
-	defer self.lock.Unlock()
-	self.nodes[prefix] = &node{
+	n := &node{
 		OnWatcher: onWatcher,
 		kvs: make(map[string]string),
 	}
-	if self.client != nil {
-		go self.watcher(prefix)
+	self.nodesChan <- &pair{
+		key: prefix,
+		val: n,
 	}
 }
 
-func (self *etcd) init() error {
+func (self *etcd) startWork() error {
 	if client, err := clientv3.New(self.conf); err != nil {
 		return err
 	} else {
@@ -84,13 +107,38 @@ func (self *etcd) init() error {
 	if err := self.setLease(5); err != nil {
 		return err
 	}
-	for k, v := range self.kvs {
-		self.put(k, v)
+
+	for {
+		select {
+		case <- self.closeSig:
+			self.clean()
+			self.doRevokeLease()
+			self.client.Close()
+		case p := <- self.kvChan:
+			if p.isDelete {
+				delete(self.kvs, p.key)
+				self.doDelete(p.key)
+			} else {
+				self.kvs[p.key] = fmt.Sprint(p.val)
+				self.doPut(p.key, fmt.Sprint(p.val))
+			}
+		case p := <- self.nodesChan:
+			self.lockNodes.Lock()
+			self.nodes[p.key] = p.val.(*node)
+			self.lockNodes.Unlock()
+			go self.doWatcher(p.key)
+		case rsp := <-self.keepAliveChan:
+			if rsp == nil {
+				Log.Infoln("etcd server closed")
+				self.leaseResp = nil
+				self.setLease(5)
+				for k, v := range self.kvs {
+					self.doPut(k, v)
+				}
+			}
+		}
 	}
-	for prefix, _ := range self.nodes {
-		go self.watcher(prefix)
-	}
-	go self.listenLeaseRespChan()
+
 	return nil
 }
 
@@ -98,7 +146,7 @@ func (self *etcd) init() error {
 func (self *etcd) setLease(timeNum int64) error {
 	lease := clientv3.NewLease(self.client)
 
-	//设置租约时间
+	//设置租约时间，阻塞到服务可用
 	leaseResp, err := lease.Grant(context.TODO(), timeNum)
 	if err != nil {
 		return err
@@ -115,25 +163,11 @@ func (self *etcd) setLease(timeNum int64) error {
 	self.leaseResp = leaseResp
 	self.cancelFunc = cancelFunc
 	self.keepAliveChan = leaseRespChan
+
 	return nil
 }
 
-//监听 续租情况
-func (self *etcd) listenLeaseRespChan() {
-	for {
-		select {
-		case leaseKeepResp := <-self.keepAliveChan:
-			if leaseKeepResp == nil {
-				Log.Infoln("etcd server closed")
-				self.client = nil
-				self.init()
-			}
-		}
-	}
-}
-
-//通过租约 注册服务
-func (self *etcd) put(key, val string) error {
+func (self *etcd) doPut(key, val string) error {
 	kv := clientv3.NewKV(self.client)
 	if _, err := kv.Put(context.TODO(), key, val, clientv3.WithLease(self.leaseResp.ID)); err != nil {
 		return err
@@ -142,7 +176,7 @@ func (self *etcd) put(key, val string) error {
 	return nil
 }
 
-func (self *etcd) delete(key string) error {
+func (self *etcd) doDelete(key string) error {
 	kv := clientv3.NewKV(self.client)
 	if _, err := kv.Delete(context.TODO(), key, clientv3.WithLease(self.leaseResp.ID)); err != nil {
 		return err
@@ -151,7 +185,7 @@ func (self *etcd) delete(key string) error {
 	return nil
 }
 
-func (self *etcd) watcher(prefix string) error {
+func (self *etcd) doWatcher(prefix string) error {
 	rsp, err := self.client.Get(context.Background(), prefix, clientv3.WithPrefix())
 	if err != nil {
 		return err
@@ -177,24 +211,31 @@ func (self *etcd) watcher(prefix string) error {
 }
 
 func (self *etcd) putNode(prefix, key, val string) {
-	self.lock.Lock()
-	defer self.lock.Unlock()
+	self.lockNodes.Lock()
+	defer self.lockNodes.Unlock()
 	self.nodes[prefix].put(key, val)
 }
 
 func (self *etcd) deleteNode(prefix, key string) {
-	self.lock.Lock()
-	defer self.lock.Unlock()
+	self.lockNodes.Lock()
+	defer self.lockNodes.Unlock()
 	if node, ok := self.nodes[prefix]; ok {
 		node.delete(key)
 	}
 }
 
 //撤销租约
-func (self *etcd) RevokeLease() error {
+func (self *etcd) doRevokeLease() error {
 	self.cancelFunc()
 	_, err := self.lease.Revoke(context.TODO(), self.leaseResp.ID)
 	return err
+}
+
+func (self *etcd) clean() {
+	close(self.kvChan)
+	close(self.nodesChan)
+	self.kvs = nil
+	self.nodes = nil
 }
 
 func (self *node) put(key, val string) {

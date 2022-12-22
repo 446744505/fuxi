@@ -28,6 +28,7 @@ const (
 
 type CorePortConf struct {
 	typ PortType
+	name string
 	host string
 	port int
 }
@@ -36,17 +37,19 @@ func (self *CorePortConf) HostPortString() string {
 	return fmt.Sprintf("%s:%d", self.host, self.port)
 }
 
-func NewAcceptor(host string, port int) Port {
+func NewAcceptor(name, host string, port int) Port {
 	t := &CorePort{}
 	t.typ = TypeAcceptor
+	t.name = name
 	t.host = host
 	t.port = port
 	return t
 }
 
-func NewConnector(host string, port int) Port {
+func NewConnector(name, host string, port int) Port {
 	t := &CorePort{}
 	t.typ = TypeConnector
+	t.name = name
 	t.host = host
 	t.port = port
 	return t

@@ -4,10 +4,12 @@ import (
 	"fuxi/core"
 	"fuxi/switcher/linker"
 	"fuxi/switcher/provider"
+	"github.com/davyxu/golog"
 	"strings"
 )
 
 func main()  {
+	golog.SetLevelByString(".", "info")
 	args := core.CreateArgs("Switcher", "the fuxi switcher")
 	args.Flag("etcd", "127.0.0.1:2379", "the etcd url")
 	args.Flag("linker", "127.0.0.1:8080", "the linker url")
@@ -26,6 +28,7 @@ func main()  {
 	s.AddService(linker.NewLinker())
 	s.Start()
 	s.Wait()
+	core.StopEtcd()
 }
 
 type switcher struct {

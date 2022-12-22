@@ -31,7 +31,7 @@ func NewLinker() *linker {
 	arr := strings.Split(url, ":")
 	host := arr[0]
 	var port, _ = strconv.Atoi(arr[1])
-	core.ServiceAddPort(Linker, core.NewAcceptor(host, port))
+	core.ServiceAddPort(Linker, core.NewAcceptor("linker", host, port))
 	core.ETCD.Put("linker/" + url, url)
 	return Linker
 }

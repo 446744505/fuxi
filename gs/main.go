@@ -24,4 +24,5 @@ func main() {
 	g := internal.NewGs()
 	g.Start()
 	g.Wait()
+	core.StopEtcd()
 }

@@ -31,7 +31,7 @@ func NewProvider() *provider {
 	arr := strings.Split(url, ":")
 	host := arr[0]
 	var port, _ = strconv.Atoi(arr[1])
-	core.ServiceAddPort(Provider, core.NewAcceptor(host, port))
+	core.ServiceAddPort(Provider, core.NewAcceptor("provider", host, port))
 	core.ETCD.Put("provider/" + url, url)
 	return Provider
 }
@@ -54,12 +54,14 @@ func (self *provider) UnBindProvidee(pvid int32) {
 
 func (self *provider) RemoveSession(session core.Session) {
 	var deleteId int32
+	self.lock.RLock()
 	for pvid, tmp := range self.providees {
 		if tmp.ID() == session.ID() {
 			deleteId = pvid
 			break
 		}
 	}
+	self.lock.RUnlock()
 	self.UnBindProvidee(deleteId)
 }
 

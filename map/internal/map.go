@@ -22,7 +22,7 @@ func NewMap() *mmap {
 	p.SetEventHandler(&mapEventHandler{})
 	Map.AddService(p)
 
-	core.ETCD.Put(fmt.Sprintf("map/%v", pvid), fmt.Sprintf("%v", pvid))
+	core.ETCD.Put(fmt.Sprintf("map/%v", pvid), fmt.Sprint(pvid))
 
 	return Map
 }
