@@ -15,10 +15,11 @@ func (self *robotEventHandler) Init() {
 }
 
 func (self *robotEventHandler) OnSessionAdd(session core.Session) {
-	enter := &msg.CEnterGame{}
-	enter.PVID = 1
-	enter.RoleId = 888
-	session.Send(enter)
+	Robot.AddLinkerSession(session)
+}
+
+func (self *robotEventHandler) OnSessionRemoved(session core.Session) {
+	Robot.RemoveLinkerSession(session)
 }
 
 

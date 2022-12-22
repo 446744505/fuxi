@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"fuxi/core"
 	"math/rand"
 	"strconv"
 )
@@ -17,7 +16,7 @@ type mapMgr struct {
 }
 
 func (self *mapMgr) Init() {
-	core.ETCD.Watch("map", self)
+	//core.ETCD.Watch("map", self)
 }
 
 func (self *mapMgr) RandomMap() int32 {
@@ -25,8 +24,11 @@ func (self *mapMgr) RandomMap() int32 {
 	for pvid, _ := range self.maps {
 		maps = append(maps, pvid)
 	}
-	i := rand.Intn(len(maps))
-	return maps[i]
+	if len(maps) == 0 {
+		return 0
+	}
+
+	return maps[rand.Intn(len(maps))]
 }
 
 func (self *mapMgr) OnAdd(key, val string) {

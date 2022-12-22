@@ -6,6 +6,7 @@ import (
 	_ "github.com/davyxu/cellnet/peer/tcp"
 	"github.com/davyxu/cellnet/proc"
 	_ "github.com/davyxu/cellnet/proc/tcp"
+	"time"
 )
 
 type CtxType int
@@ -19,6 +20,7 @@ type Port interface {
 	SetService(service Service)
 	Service() Service
 	Name() string
+	HostPortString() string
 }
 
 type CorePort struct {
@@ -61,13 +63,11 @@ func (self *CorePort) Start() {
 		}
 	})
 
-	/* 要重连就放开这里
 	if reconnector, ok := self.peer.(interface{
 		SetReconnectDuration(time.Duration)
 	}); ok {
 		reconnector.SetReconnectDuration(5 * time.Second)
 	}
-	 */
 
 	self.peer.Start()
 }

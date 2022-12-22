@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"fmt"
 	"fuxi/core"
 	"fuxi/switcher/linker/util"
 	"github.com/davyxu/golog"
@@ -14,6 +15,8 @@ var Provider *provider
 
 type provider struct {
 	core.CoreService
+
+	EtcdUrl string
 
 	lock sync.RWMutex
 	providees map[int32]core.Session
@@ -30,25 +33,36 @@ func NewProvider() *provider {
 	url := core.Args.Get("provider")
 	arr := strings.Split(url, ":")
 	host := arr[0]
+	Provider.EtcdUrl = url
 	var port, _ = strconv.Atoi(arr[1])
-	core.ServiceAddPort(Provider, core.NewAcceptor("provider", host, port))
-	core.ETCD.Put("provider/" + url, url)
+	if core.ServiceAddPort(Provider, core.NewAcceptor("provider", host, port)) {
+		core.ETCD.Put("provider/" + Provider.EtcdUrl, url)
+	}
 	return Provider
 }
 
 func (self *provider) BindProvidee(pvid int32, name string, session core.Session) {
 	self.lock.Lock()
-	defer self.lock.Unlock()
-	Log.Infof("bind providee [%d] [%s] [%s]", pvid, name, session)
 	self.providees[pvid] = session
+	self.lock.Unlock()
+	Log.Infof("bind providee [%d] [%s] [%s]", pvid, name, session)
+	url := session.Port().HostPortString()
+	core.ETCD.Put(fmt.Sprintf("providee/%v/%v", url, pvid), name)
 }
 
 func (self *provider) UnBindProvidee(pvid int32) {
+	var url = ""
 	self.lock.Lock()
-	defer self.lock.Unlock()
 	if pvid > 0 && self.providees != nil {
-		Log.Infof("unbind providee [%d]", pvid)
-		delete(self.providees, pvid)
+		if session, ok := self.providees[pvid]; ok {
+			delete(self.providees, pvid)
+			url = session.Port().HostPortString()
+			Log.Infof("unbind providee [%d]", pvid)
+		}
+	}
+	self.lock.Unlock()
+	if url != "" {
+		core.ETCD.Delete(fmt.Sprintf("providee/%v/%v", url, pvid))
 	}
 }
 

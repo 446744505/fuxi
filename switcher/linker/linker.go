@@ -1,8 +1,10 @@
 package linker
 
 import (
+	"fmt"
 	"fuxi/core"
 	"fuxi/switcher/linker/util"
+	"fuxi/switcher/provider"
 	"github.com/davyxu/golog"
 	"strconv"
 	"strings"
@@ -14,6 +16,8 @@ var Linker *linker
 
 type linker struct {
 	core.CoreService
+
+	EtcdUrl string
 
 	lock sync.RWMutex
 	clients map[int64]core.Session
@@ -30,9 +34,11 @@ func NewLinker() *linker {
 	url := core.Args.Get("linker")
 	arr := strings.Split(url, ":")
 	host := arr[0]
+	Linker.EtcdUrl = url
 	var port, _ = strconv.Atoi(arr[1])
-	core.ServiceAddPort(Linker, core.NewAcceptor("linker", host, port))
-	core.ETCD.Put("linker/" + url, url)
+	if core.ServiceAddPort(Linker, core.NewAcceptor("linker", host, port)) {
+		core.ETCD.Put(fmt.Sprintf("linker/%v/%v", Linker.EtcdUrl, provider.Provider.EtcdUrl), url)
+	}
 	return Linker
 }
 

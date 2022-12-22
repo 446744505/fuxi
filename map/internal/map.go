@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"fmt"
 	"fuxi/core"
 	"fuxi/providee"
 	"github.com/davyxu/golog"
@@ -21,8 +20,5 @@ func NewMap() *mmap {
 	p := providee.NewProvidee(int32(pvid), "map")
 	p.SetEventHandler(&mapEventHandler{})
 	Map.AddService(p)
-
-	core.ETCD.Put(fmt.Sprintf("map/%v", pvid), fmt.Sprint(pvid))
-
 	return Map
 }

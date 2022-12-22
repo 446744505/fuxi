@@ -11,7 +11,7 @@ type Service interface {
 	Controler
 	ServiceBundle
 	Name() string
-	addPort(port Port)
+	addPort(port Port) bool
 }
 
 type CoreService struct {
@@ -54,16 +54,17 @@ func (self *CoreService) Stop() {
 	self.lock.RUnlock()
 }
 
-func (self *CoreService) addPort(port Port) {
+func (self *CoreService) addPort(port Port) bool {
 	self.lock.Lock()
 	defer self.lock.Unlock()
 	if self.ports == nil {
 		self.ports = make(map[string]Port)
 	}
-	if old, ok := self.ports[port.Name()]; ok {
-		old.Stop()
+	if _, ok := self.ports[port.Name()]; ok {
+		return false
 	}
 	self.ports[port.Name()] = port
+	return true
 }
 
 func (self *CoreServiceBundle) EventHandler() EventHandler {
@@ -99,7 +100,7 @@ func (self *CoreServiceBundle) DispatchHandler() DispatchHandler {
 	return self.dipHandler
 }
 
-func ServiceAddPort(service Service, port Port) {
+func ServiceAddPort(service Service, port Port) bool {
 	port.SetService(service)
-	service.addPort(port)
+	return service.addPort(port)
 }

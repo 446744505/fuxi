@@ -84,8 +84,9 @@ func (self *providee) OnAdd(key, val string) {
 	host := arr[0]
 	port, _ := strconv.Atoi(arr[1])
 	porter := core.NewConnector(key, host, port)
-	core.ServiceAddPort(self, porter)
-	porter.Start()
+	if core.ServiceAddPort(self, porter) {
+		porter.Start()
+	}
 }
 
 func (self *providee) OnDelete(key, val string) {

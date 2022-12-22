@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"fmt"
 	"fuxi/core"
 	"fuxi/msg"
 	"fuxi/providee"
@@ -28,9 +27,6 @@ func NewGs() *gs {
 	p := providee.NewProvidee(GS.Pvid, "gs")
 	p.SetEventHandler(&gsEventHandler{})
 	GS.AddService(p)
-
-	core.ETCD.Put(fmt.Sprintf("gs/%v", pvid), fmt.Sprint(pvid))
-
 	return GS
 }
 
