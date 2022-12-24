@@ -105,6 +105,7 @@ func (self *etcd) startWork() error {
 	}
 
 	if err := self.setLease(5); err != nil {
+		Log.Errorf("etcd start setLease err", err)
 		return err
 	}
 
@@ -112,15 +113,23 @@ func (self *etcd) startWork() error {
 		select {
 		case <- self.closeSig:
 			self.clean()
-			self.doRevokeLease()
-			self.client.Close()
+			if err := self.doRevokeLease(); err != nil {
+				Log.Errorf("etcd revoke lease err", err)
+			}
+			if err := self.client.Close(); err != nil {
+				Log.Errorf("etcd close client err", err)
+			}
 		case p := <- self.kvChan:
 			if p.isDelete {
 				delete(self.kvs, p.key)
-				self.doDelete(p.key)
+				if err := self.doDelete(p.key); err != nil {
+					Log.Errorf("etcd delete key %v err", p.key, err)
+				}
 			} else {
 				self.kvs[p.key] = fmt.Sprint(p.val)
-				self.doPut(p.key, fmt.Sprint(p.val))
+				if err := self.doPut(p.key, fmt.Sprint(p.val)); err != nil {
+					Log.Errorf("etcd put key %v val %v err", p.key, p.val, err)
+				}
 			}
 		case p := <- self.nodesChan:
 			self.lockNodes.Lock()
@@ -131,7 +140,10 @@ func (self *etcd) startWork() error {
 			if rsp == nil {
 				Log.Infoln("etcd server closed")
 				self.leaseResp = nil
-				self.setLease(5)
+				if err := self.setLease(5); err != nil {
+					Log.Errorf("etcd reconnect setLease err", err)
+					continue
+				}
 				for k, v := range self.kvs {
 					self.doPut(k, v)
 				}
@@ -178,7 +190,7 @@ func (self *etcd) doPut(key, val string) error {
 
 func (self *etcd) doDelete(key string) error {
 	kv := clientv3.NewKV(self.client)
-	if _, err := kv.Delete(context.TODO(), key, clientv3.WithLease(self.leaseResp.ID)); err != nil {
+	if _, err := kv.Delete(context.TODO(), key); err != nil {
 		return err
 	}
 	Log.Infof("etcd delete kv %s", key)
@@ -188,6 +200,7 @@ func (self *etcd) doDelete(key string) error {
 func (self *etcd) doWatcher(prefix string) error {
 	rsp, err := self.client.Get(context.Background(), prefix, clientv3.WithPrefix())
 	if err != nil {
+		Log.Errorf("etcd watcher prefix %v err", prefix, err)
 		return err
 	}
 	if rsp != nil && rsp.Kvs != nil {
