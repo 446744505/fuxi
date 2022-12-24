@@ -1,11 +1,13 @@
 package internal
 
 import (
+	"fmt"
 	"fuxi/core"
 	"fuxi/msg"
 	"fuxi/providee"
 	"github.com/davyxu/golog"
 	"strconv"
+	"sync"
 )
 
 var GS *gs
@@ -15,6 +17,7 @@ type gs struct {
 	core.NetControlImpl
 
 	Pvid int32
+	roleLock sync.RWMutex
 	roles map[int64]*NetRole
 }
 
@@ -36,28 +39,32 @@ func (self *gs) OnRoleEnter(p *msg.LEnterGame) {
 	role.ClientSid = p.ClientSid
 	role.Provider = p.Session()
 	role.EnterMap()
+
+	self.roleLock.Lock()
 	self.roles[p.RoleId] = role
+	self.roleLock.Unlock()
+
 	ack := &msg.SEnterGame{}
-	ack.Name = "玩家1"
+	ack.Name = fmt.Sprintf("玩家%v", role.RoleId)
 	self.SendToClient(p.RoleId, ack)
 	Log.Infof("role %d enter game", p.RoleId)
 }
 
 func (self *gs) SendToClient(roleId int64, msg core.Msg) {
-	if role, ok := self.roles[roleId]; ok {
-		msg.SetToType(core.MsgToClient)
-		msg.SetToID(role.ClientSid)
-		role.Provider.Send(msg)
+	self.roleLock.RLock()
+	role, ok := self.roles[roleId]
+	self.roleLock.RUnlock()
+	if !ok {
+		Log.Errorf("not client role %d", roleId)
 		return
 	}
-	Log.Errorf("not client role %d", roleId)
+
+	msg.SetToType(core.MsgToClient)
+	msg.SetToID(role.ClientSid)
+	role.Provider.Send(msg)
+	return
 }
 
-func (self *gs) SendToProvidee(pvid int32, msg core.Msg) {
-	svr := self.GetService("gs")
-	if p, ok := svr.(interface{
-		SendToProvidee(int32, core.Msg)
-	}); ok {
-		p.SendToProvidee(pvid, msg)
-	}
+func (self *gs) SendToProvidee(pvid int32, msg core.Msg) bool {
+	return providee.Providee.SendToProvidee(pvid, msg)
 }

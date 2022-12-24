@@ -1,14 +1,15 @@
 package internal
 
 import (
+	"fmt"
 	"fuxi/core"
 	"math/rand"
+	"strconv"
+	"strings"
 	"sync"
 )
 
 type Linker struct {
-	session core.Session
-
 	linkerName string
 	providerName string
 
@@ -16,16 +17,15 @@ type Linker struct {
 	gsPvids map[int32]bool
 }
 
-func (self *Linker) IsAlive() bool {
-	return self.session != nil
-}
-
-func (self *Linker) Send(msg core.Msg) bool {
-	if self.session == nil {
-		return false
+func (self *Linker) NewConnect(roleId int64) core.Port {
+	arr := strings.Split(self.linkerName, ":")
+	port, _ := strconv.Atoi(arr[1])
+	porter := core.NewConnector(fmt.Sprint(roleId), arr[0], port)
+	if core.ServiceAddPort(&Robot.service, porter) {
+		porter.Start()
+		return porter
 	}
-	self.session.Send(msg)
-	return true
+	return nil
 }
 
 func (self *Linker) HaveGs(pvid int32) bool {
@@ -56,12 +56,12 @@ func (self *Linker) AddGs(pvid int32) {
 	self.gsLock.Lock()
 	defer self.gsLock.Unlock()
 	self.gsPvids[pvid] = true
-	Log.Infof("linker %v add gs %v", self.linkerName, pvid)
+	Log.Infof("robot %v add gs %v", self.linkerName, pvid)
 }
 
 func (self *Linker) RemoveGs(pvid int32) {
 	self.gsLock.Lock()
 	defer self.gsLock.Unlock()
 	delete(self.gsPvids, pvid)
-	Log.Infof("linker %v remove gs %v", self.linkerName, pvid)
+	Log.Infof("robot %v remove gs %v", self.linkerName, pvid)
 }

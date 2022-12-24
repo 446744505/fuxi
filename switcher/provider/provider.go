@@ -97,6 +97,7 @@ func init() {
 				toPVID, dispatch.MsgId, dispatch.Session())
 			return
 		}
+		//todo 带上客户端的sessionid
 		prov.SendRaw(dispatch.MsgId, dispatch.MsgData)
 	}
 	util.SendToProvidee = func(pvid int32, msg core.Msg) {

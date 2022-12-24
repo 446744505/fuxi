@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fuxi/core"
 	"fuxi/msg"
 	"fuxi/providee"
 )
@@ -13,6 +14,11 @@ func (self *gsEventHandler) Init() {
 	self.ProvideeEventHandler.Init()
 	self.RegisterSvr()
 	self.RegisterClient()
+}
+
+func (self *gsEventHandler) OnSessionRemoved(session core.Session) {
+	self.ProvideeEventHandler.OnSessionRemoved(session)
+	//todo 踢当前session的所有role下线
 }
 
 func (self *gsEventHandler) RegisterSvr() {

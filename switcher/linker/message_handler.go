@@ -20,5 +20,6 @@ func (self *linkerEventHandler) OnCEnterGame(p core.Msg) {
 		RoleId: center.RoleId,
 		ClientSid: p.Session().ID(),
 	}
+	Log.Debugf("role %v enter", center.RoleId)
 	util.SendToProvidee(center.PVID, lenter)
 }

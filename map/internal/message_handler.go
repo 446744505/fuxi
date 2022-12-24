@@ -7,5 +7,6 @@ import (
 
 func (self *mapEventHandler) OnGEnterMap(p core.Msg) {
 	enter := p.(*msg.GEnterMap)
-	Log.Infof("role %v enter map", enter.RoleId)
+	role := &NetRole{}
+	role.OnEnterMap(enter)
 }

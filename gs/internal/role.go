@@ -14,14 +14,23 @@ type NetRole struct {
 }
 
 func (self *NetRole) EnterMap() {
-	self.MapPvid = MapMgr.RandomMap()
+	Log.Debugf("role %v start enter map", self.RoleId)
+	mapPvidId := MapMgr.RandomMap()
+	if mapPvidId == 0 {
+		Log.Errorf("role %v no map can use", self.RoleId)
+		return
+	}
+	self.MapPvid = mapPvidId
 	enter := &msg.GEnterMap{}
 	enter.RoleId = self.RoleId
 	enter.ClientSid = self.ClientSid
 	enter.GsPvid = GS.Pvid
-	self.SendToSelfMap(enter)
+	enter.ProviderName = self.Provider.Port().HostPortString()
+	if ok := self.SendToSelfMap(enter); !ok {
+		Log.Errorf("role %v enter map failed", self.RoleId)
+	}
 }
 
-func (self *NetRole) SendToSelfMap(msg core.Msg) {
-	GS.SendToProvidee(self.MapPvid, msg)
+func (self *NetRole) SendToSelfMap(msg core.Msg) bool {
+	return GS.SendToProvidee(self.MapPvid, msg)
 }

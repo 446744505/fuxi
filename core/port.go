@@ -18,6 +18,7 @@ const (
 
 type Port interface {
 	Controler
+	Peer() cellnet.Peer
 	SetService(service Service)
 	Service() Service
 	Name() string
@@ -92,4 +93,8 @@ func (self *CorePort) SetService(service Service) {
 
 func (self *CorePort) Service() Service {
 	return self.service
+}
+
+func (self *CorePort) Peer() cellnet.Peer {
+	return self.peer
 }

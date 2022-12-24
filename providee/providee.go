@@ -53,16 +53,26 @@ func (self *providee) OnRemoveSession(session core.Session) {
 	}
 }
 
+func (self *providee) GetProvider(providerName string) core.Session {
+	self.lock.RLock()
+	defer self.lock.RUnlock()
+	if provider, ok := self.providerMap[providerName]; ok {
+		return provider
+	}
+	return nil
+}
+
 //todo 先随便选一个provider发往providee，后续要考虑顺序，其他providee已与某个provider断开
-func (self *providee) SendToProvidee(pvid int32, msg core.Msg) {
+func (self *providee) SendToProvidee(pvid int32, msg core.Msg) bool {
 	msg.SetToType(core.MsgToProvidee)
 	msg.SetToID(int64(pvid))
 	p := self.getOneProvider()
 	if p == nil {
 		core.Log.Errorln("not any provider can be used")
-		return
+		return false
 	}
 	p.Send(msg)
+	return true
 }
 
 func (self *providee) SendToProvidees(pvids []int32, msg core.Msg) {

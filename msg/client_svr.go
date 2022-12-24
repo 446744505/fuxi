@@ -65,3 +65,31 @@ func (self *SEnterGame) Size() (ret int) {
 	ret += proto.SizeString(0, self.Name)
 	return
 }
+
+type SEnterMap struct {
+	core.CoreMsg `binary:"-"`
+	Pvid         int32
+}
+
+func (self *SEnterMap) ID() int32 {
+	return 5003
+}
+
+func (self *SEnterMap) Marshal(buffer *proto.Buffer) error {
+	proto.MarshalInt32(buffer, 0, self.Pvid)
+	return nil
+}
+
+func (self *SEnterMap) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
+	switch fieldIndex {
+	case 0:
+		return proto.UnmarshalInt32(buffer, wt, &self.Pvid)
+	}
+
+	return proto.ErrUnknownField
+}
+
+func (self *SEnterMap) Size() (ret int) {
+	ret += proto.SizeInt32(0, self.Pvid)
+	return
+}
