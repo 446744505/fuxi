@@ -30,7 +30,7 @@ func NewProvidee(pvid int32, name string) *providee {
 }
 
 func (self *providee) Start() {
-	core.ETCD.Watch("provider", self)
+	core.ETCD.Watch(core.NodeNameProvider, self)
 	self.CoreService.Start()
 }
 

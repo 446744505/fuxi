@@ -41,29 +41,29 @@ func NewRobot() *robot {
 		NewRole(int64(i)).Start()
 	}
 
-	core.ETCD.Watch("linker", &linkerWatcher{})
+	core.ETCD.Watch(core.NodeNameLinker, &linkerWatcher{})
 	return Robot
 }
 
-func (self *robot) AddLinker(name, providerName string) {
+func (self *robot) AddLinker(linkerUrl, providerUrl string) {
 	self.linkerLock.Lock()
 	defer self.linkerLock.Unlock()
-	if linker, ok := self.linkers[name]; ok {
-		linker.providerName = providerName
+	if linker, ok := self.linkers[linkerUrl]; ok {
+		linker.providerUrl = providerUrl
 	} else {
-		self.linkers[name] = &Linker{
-			linkerName: name,
-			providerName: providerName,
-			gsPvids: make(map[int32]bool),
+		self.linkers[linkerUrl] = &Linker{
+			linkerUrl:   linkerUrl,
+			providerUrl: providerUrl,
+			gsPvids:     make(map[int32]bool),
 		}
 	}
 }
 
-func (self *robot) UpdateGs(isRemove bool, providerName string, pvid int32) {
+func (self *robot) UpdateGs(isRemove bool, providerUrl string, pvid int32) {
 	self.linkerLock.Lock()
 	defer self.linkerLock.Unlock()
 	for _, linker := range self.linkers {
-		if linker.providerName == providerName {
+		if linker.providerUrl == providerUrl {
 			if isRemove {
 				linker.RemoveGs(pvid)
 			} else {
@@ -90,12 +90,11 @@ func (self *robot) RandomLinker(gsPvid int32) *Linker {
 }
 
 func (self *linkerWatcher) OnAdd(key, val string) {
-	arr := strings.Split(key, "/") // key = linker/linkerurl/providerurl
-	linkerName := arr[1]
-	providerName := arr[2]
-	Robot.AddLinker(linkerName, providerName)
+	meta := &core.SwitcherMeta{}
+	meta.ValueOf(key)
+	Robot.AddLinker(meta.LinkerUrl, meta.ProviderUrl)
 
-	arr = strings.Split(val, ":")
+	arr := strings.Split(val, ":")
 	host := arr[0]
 	port, _:= strconv.Atoi(arr[1])
 	porter := core.NewConnector(key, host, port)
@@ -103,7 +102,7 @@ func (self *linkerWatcher) OnAdd(key, val string) {
 		porter.Start()
 	}
 
-	core.ETCD.Watch(fmt.Sprintf("providee/%v", providerName), &gsWatcher{})
+	core.ETCD.Watch(fmt.Sprintf("%s/%s", core.NodeNameProvidee, meta.ProviderUrl), &gsWatcher{})
 }
 
 func (self *linkerWatcher) OnDelete(key, val string) {
@@ -111,16 +110,16 @@ func (self *linkerWatcher) OnDelete(key, val string) {
 
 func (self *gsWatcher) OnAdd(key, val string) {
 	if val == "gs" {
-		arr := strings.Split(key, "/") // key = providee/providerurl/pvid
-		pvid, _ := strconv.Atoi(arr[2])
-		Robot.UpdateGs(false, arr[1], int32(pvid))
+		meta := &core.ProvideeMeta{}
+		meta.ValueOf(key)
+		Robot.UpdateGs(false, meta.ProviderUrl, meta.Pvid)
 	}
 }
 
 func (self *gsWatcher) OnDelete(key, val string) {
 	if val == "gs" {
-		pvid, _ := strconv.Atoi(val)
-		arr := strings.Split(key, "/") // key = providee/providerurl/pvid
-		Robot.UpdateGs(true, arr[1], int32(pvid))
+		meta := &core.ProvideeMeta{}
+		meta.ValueOf(key)
+		Robot.UpdateGs(true, meta.ProviderUrl, meta.Pvid)
 	}
 }

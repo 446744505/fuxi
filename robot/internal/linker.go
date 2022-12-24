@@ -10,15 +10,15 @@ import (
 )
 
 type Linker struct {
-	linkerName string
-	providerName string
+	linkerUrl   string
+	providerUrl string
 
 	gsLock sync.RWMutex
 	gsPvids map[int32]bool
 }
 
 func (self *Linker) NewConnect(roleId int64) core.Port {
-	arr := strings.Split(self.linkerName, ":")
+	arr := strings.Split(self.linkerUrl, ":")
 	port, _ := strconv.Atoi(arr[1])
 	porter := core.NewConnector(fmt.Sprint(roleId), arr[0], port)
 	if core.ServiceAddPort(&Robot.service, porter) {
@@ -56,12 +56,12 @@ func (self *Linker) AddGs(pvid int32) {
 	self.gsLock.Lock()
 	defer self.gsLock.Unlock()
 	self.gsPvids[pvid] = true
-	Log.Infof("robot %v add gs %v", self.linkerName, pvid)
+	Log.Infof("robot %v add gs %v", self.linkerUrl, pvid)
 }
 
 func (self *Linker) RemoveGs(pvid int32) {
 	self.gsLock.Lock()
 	defer self.gsLock.Unlock()
 	delete(self.gsPvids, pvid)
-	Log.Infof("robot %v remove gs %v", self.linkerName, pvid)
+	Log.Infof("robot %v remove gs %v", self.linkerUrl, pvid)
 }

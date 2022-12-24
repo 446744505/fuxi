@@ -6,15 +6,35 @@ import (
 	"fmt"
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	"go.etcd.io/etcd/client/v3"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
 
 var ETCD *etcd
 
+const (
+	NodeNameLinker = "linker"
+	NodeNameProvider = "provider"
+	NodeNameProvidee = "providee"
+)
+
 type OnWatcher interface {
 	OnAdd(key, val string)
 	OnDelete(key, val string)
+}
+
+type SwitcherMeta struct {
+	NodeName string
+	LinkerUrl string
+	ProviderUrl string
+}
+
+type ProvideeMeta struct {
+	NodeName string
+	ProviderUrl string
+	Pvid int32
 }
 
 type node struct {
@@ -263,4 +283,29 @@ func (self *node) delete(key string) {
 		self.OnDelete(key, val)
 		Log.Infof("etcd delete node key %s", key)
 	}
+}
+
+func (self *SwitcherMeta) Path() string {
+	return fmt.Sprintf("%s/%s/%s", self.NodeName, self.LinkerUrl, self.ProviderUrl)
+}
+
+func (self *SwitcherMeta) ValueOf(str string) *SwitcherMeta {
+	arr := strings.Split(str, "/")
+	self.NodeName = arr[0]
+	self.LinkerUrl = arr[1]
+	self.ProviderUrl = arr[2]
+	return self
+}
+
+func (self *ProvideeMeta) Path() string {
+	return fmt.Sprintf("%s/%s/%v", self.NodeName, self.ProviderUrl, self.Pvid)
+}
+
+func (self *ProvideeMeta) ValueOf(str string) *ProvideeMeta {
+	arr := strings.Split(str, "/")
+	self.NodeName = arr[0]
+	self.ProviderUrl = arr[1]
+	pvid, _ := strconv.Atoi(arr[2])
+	self.Pvid = int32(pvid)
+	return self
 }

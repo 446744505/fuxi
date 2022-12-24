@@ -16,8 +16,6 @@ var Provider *provider
 type provider struct {
 	core.CoreService
 
-	EtcdUrl string
-
 	lock sync.RWMutex
 	providees map[int32]core.Session
 }
@@ -33,10 +31,14 @@ func NewProvider() *provider {
 	url := core.Args.Get("provider")
 	arr := strings.Split(url, ":")
 	host := arr[0]
-	Provider.EtcdUrl = url
 	var port, _ = strconv.Atoi(arr[1])
 	if core.ServiceAddPort(Provider, core.NewAcceptor("provider", host, port)) {
-		core.ETCD.Put("provider/" + Provider.EtcdUrl, url)
+		meta := &core.SwitcherMeta{
+			NodeName: core.NodeNameProvider,
+			LinkerUrl: core.Args.Get("linker"),
+			ProviderUrl: url,
+		}
+		core.ETCD.Put(meta.Path(), url)
 	}
 	return Provider
 }
@@ -47,7 +49,13 @@ func (self *provider) BindProvidee(pvid int32, name string, session core.Session
 	self.lock.Unlock()
 	Log.Infof("bind providee [%d] [%s] [%s]", pvid, name, session)
 	url := session.Port().HostPortString()
-	core.ETCD.Put(fmt.Sprintf("providee/%v/%v", url, pvid), name)
+
+	meta := &core.ProvideeMeta{
+		NodeName: core.NodeNameProvidee,
+		ProviderUrl: url,
+		Pvid: pvid,
+	}
+	core.ETCD.Put(meta.Path(), name)
 }
 
 func (self *provider) UnBindProvidee(pvid int32) {
