@@ -1,14 +1,16 @@
 package internal
 
 import (
+	"fuxi/core"
 	"math/rand"
 	"strconv"
+	"strings"
 )
 
 var MapMgr *mapMgr
 
 type mapInfo struct {
-
+	providerName string
 }
 
 type mapMgr struct {
@@ -16,7 +18,7 @@ type mapMgr struct {
 }
 
 func (self *mapMgr) Init() {
-	//core.ETCD.Watch("map", self)
+	core.ETCD.Watch("providee", self)
 }
 
 func (self *mapMgr) RandomMap() int32 {
@@ -32,15 +34,21 @@ func (self *mapMgr) RandomMap() int32 {
 }
 
 func (self *mapMgr) OnAdd(key, val string) {
-	pvid, _ := strconv.Atoi(val)
-	self.maps[int32(pvid)] = &mapInfo{}
-	Log.Infof("add map %v", pvid)
+	if val == "map" {
+		arr := strings.Split(key, "/") // key = providee/providerurl/pvid
+		pvid, _ := strconv.Atoi(arr[2])
+		self.maps[int32(pvid)] = &mapInfo{providerName: arr[1]}
+		Log.Infof("add map %v", pvid)
+	}
 }
 
 func (self *mapMgr) OnDelete(key, val string) {
-	pvid, _ := strconv.Atoi(val)
-	delete(self.maps, int32(pvid))
-	Log.Infof("remove map %v", pvid)
+	if val == "map" {
+		arr := strings.Split(key, "/") // key = providee/providerurl/pvid
+		pvid, _ := strconv.Atoi(arr[2])
+		delete(self.maps, int32(pvid))
+		Log.Infof("remove map %v", pvid)
+	}
 }
 
 func init() {

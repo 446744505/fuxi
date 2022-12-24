@@ -15,13 +15,13 @@ type providee struct {
 	ProvideeServiceConfProp
 
 	lock sync.RWMutex
-	providerMap map[int64]core.Session
+	providerMap map[string]core.Session
 	providerList []core.Session
 }
 
 func NewProvidee(pvid int32, name string) *providee {
 	Providee = &providee{
-		providerMap: make(map[int64]core.Session),
+		providerMap: make(map[string]core.Session),
 	}
 	Providee.pvid = pvid
 	Providee.SetName(name)
@@ -37,16 +37,16 @@ func (self *providee) Start() {
 func (self *providee) OnAddSession(session core.Session) {
 	self.lock.Lock()
 	defer self.lock.Unlock()
-	self.providerMap[session.ID()] = session
+	self.providerMap[session.Port().HostPortString()] = session
 	self.providerList = append(self.providerList, session)
 }
 
 func (self *providee) OnRemoveSession(session core.Session) {
 	self.lock.Lock()
 	defer self.lock.Unlock()
-	delete(self.providerMap, session.ID())
+	delete(self.providerMap, session.Port().HostPortString())
 	for i := 0; i < len(self.providerList); i++ {
-		if self.providerList[i].ID() == session.ID() {
+		if self.providerList[i].Port().HostPortString() == session.Port().HostPortString() {
 			self.providerList = append(self.providerList[:i], self.providerList[i+1:]...)
 			break
 		}

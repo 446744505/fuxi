@@ -92,7 +92,7 @@ func (self *robot) UpdateGs(isRemove bool, providerName string, pvid int32) {
 
 func (self *robot) RandomLinker(gsPvid int32) *Linker {
 	self.linkerLock.RLock()
-	self.linkerLock.RUnlock()
+	defer self.linkerLock.RUnlock()
 	var linkers []*Linker
 	for _, link := range self.linkers {
 		if link.IsAlive() && link.HaveGs(gsPvid) {

@@ -6,6 +6,7 @@ import (
 	_ "github.com/davyxu/cellnet/peer/tcp"
 	"github.com/davyxu/cellnet/proc"
 	_ "github.com/davyxu/cellnet/proc/tcp"
+	"sync"
 	"time"
 )
 
@@ -26,10 +27,13 @@ type Port interface {
 type CorePort struct {
 	CorePortConf
 	service Service
+	lock sync.Mutex
 	peer cellnet.Peer
 }
 
 func (self *CorePort) Start() {
+	self.lock.Lock()
+	defer self.lock.Unlock()
 	self.peer = peer.NewGenericPeer(self.typ, "", self.HostPortString(), nil)
 	evtHandler := self.Service().EventHandler()
 	creater := self.Service().SessionCreater()
@@ -77,6 +81,8 @@ func (self *CorePort) Name() string {
 }
 
 func (self *CorePort) Stop() {
+	self.lock.Lock()
+	defer self.lock.Unlock()
 	self.peer.Stop()
 }
 
