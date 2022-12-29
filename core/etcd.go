@@ -33,6 +33,7 @@ type SwitcherMeta struct {
 
 type ProvideeMeta struct {
 	NodeName string
+	ServerName string
 	ProviderUrl string
 	Pvid int32
 }
@@ -267,21 +268,22 @@ func (self *etcd) doRevokeLease() error {
 func (self *etcd) clean() {
 	close(self.kvChan)
 	close(self.nodesChan)
+	close(self.closeSig)
 	self.kvs = nil
 	self.nodes = nil
 }
 
 func (self *node) put(key, val string) {
 	self.kvs[key] = val
-	self.OnAdd(key, val)
 	Log.Infof("etcd add node %s = %s", key, val)
+	self.OnAdd(key, val)
 }
 
 func (self *node) delete(key string) {
 	if val, ok := self.kvs[key]; ok {
 		delete(self.kvs, key)
-		self.OnDelete(key, val)
 		Log.Infof("etcd delete node key %s", key)
+		self.OnDelete(key, val)
 	}
 }
 
@@ -301,10 +303,11 @@ func (self *ProvideeMeta) Path() string {
 	return fmt.Sprintf("%s/%s/%v", self.NodeName, self.ProviderUrl, self.Pvid)
 }
 
-func (self *ProvideeMeta) ValueOf(str string) *ProvideeMeta {
+func (self *ProvideeMeta) ValueOf(str string, val string) *ProvideeMeta {
 	arr := strings.Split(str, "/")
 	self.NodeName = arr[0]
 	self.ProviderUrl = arr[1]
+	self.ServerName = val
 	pvid, _ := strconv.Atoi(arr[2])
 	self.Pvid = int32(pvid)
 	return self

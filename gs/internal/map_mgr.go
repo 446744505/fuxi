@@ -15,10 +15,6 @@ type mapMgr struct {
 	maps map[int32]*mapInfo //key=pvid
 }
 
-func (self *mapMgr) Init() {
-	core.ETCD.Watch(core.NodeNameProvidee, self)
-}
-
 func (self *mapMgr) RandomMap() int32 {
 	var maps []int32
 	for pvid, _ := range self.maps {
@@ -31,22 +27,20 @@ func (self *mapMgr) RandomMap() int32 {
 	return maps[rand.Intn(len(maps))]
 }
 
-func (self *mapMgr) OnAdd(key, val string) {
-	if val == "map" {
-		meta := &core.ProvideeMeta{}
-		meta.ValueOf(key)
-		self.maps[meta.Pvid] = &mapInfo{providerUrl: meta.ProviderUrl}
-		Log.Infof("add map %v", meta.Pvid)
+func (self *mapMgr) AddMap(meta *core.ProvideeMeta) {
+	if core.ServerMap != meta.ServerName {
+		return
 	}
+	self.maps[meta.Pvid] = &mapInfo{providerUrl: meta.ProviderUrl}
+	Log.Infof("add map %v", meta.Pvid)
 }
 
-func (self *mapMgr) OnDelete(key, val string) {
-	if val == "map" {
-		meta := &core.ProvideeMeta{}
-		meta.ValueOf(key)
-		delete(self.maps, meta.Pvid)
-		Log.Infof("remove map %v", meta.Pvid)
+func (self *mapMgr) RemoveMap(meta *core.ProvideeMeta) {
+	if core.ServerMap != meta.ServerName {
+		return
 	}
+	delete(self.maps, meta.Pvid)
+	Log.Infof("remove map %v", meta.Pvid)
 }
 
 func init() {

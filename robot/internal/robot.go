@@ -109,17 +109,17 @@ func (self *linkerWatcher) OnDelete(key, val string) {
 }
 
 func (self *gsWatcher) OnAdd(key, val string) {
-	if val == "gs" {
+	if val == core.ServerGs {
 		meta := &core.ProvideeMeta{}
-		meta.ValueOf(key)
+		meta.ValueOf(key, val)
 		Robot.UpdateGs(false, meta.ProviderUrl, meta.Pvid)
 	}
 }
 
 func (self *gsWatcher) OnDelete(key, val string) {
-	if val == "gs" {
+	if val == core.ServerGs {
 		meta := &core.ProvideeMeta{}
-		meta.ValueOf(key)
+		meta.ValueOf(key, val)
 		Robot.UpdateGs(true, meta.ProviderUrl, meta.Pvid)
 	}
 }

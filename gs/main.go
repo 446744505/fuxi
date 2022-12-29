@@ -19,8 +19,6 @@ func main() {
 	url := core.Args.Get("etcd")
 	core.InitEtcd(strings.Split(url, ","))
 
-	internal.MapMgr.Init()
-
 	g := internal.NewGs()
 	g.Start()
 	g.Wait()

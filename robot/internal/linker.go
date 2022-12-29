@@ -29,6 +29,8 @@ func (self *Linker) NewConnect(roleId int64) core.Port {
 }
 
 func (self *Linker) HaveGs(pvid int32) bool {
+	self.gsLock.RLock()
+	defer self.gsLock.RUnlock()
 	if pvid == 0 {
 		return len(self.gsPvids) > 0
 	}
@@ -41,7 +43,7 @@ func (self *Linker) HaveGs(pvid int32) bool {
 
 func (self *Linker) RandGs() int32 {
 	self.gsLock.RLock()
-	self.gsLock.RUnlock()
+	defer self.gsLock.RUnlock()
 	var pvids []int32
 	for pvid, _ := range self.gsPvids {
 		pvids = append(pvids, pvid)

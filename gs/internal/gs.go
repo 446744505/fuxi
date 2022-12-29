@@ -27,10 +27,21 @@ func NewGs() *gs {
 	}
 	pvid, _ := strconv.Atoi(core.Args.Get("pvid"))
 	GS.Pvid = int32(pvid)
-	p := providee.NewProvidee(GS.Pvid, "gs")
+	p := providee.NewProvidee(GS.Pvid, core.ServerGs)
 	p.SetEventHandler(&gsEventHandler{})
+	p.SetOnProvideeUpdate(OnProvideeUpdate)
 	GS.AddService(p)
 	return GS
+}
+
+func OnProvideeUpdate(isRemove bool, meta *core.ProvideeMeta) {
+	if core.ServerMap == meta.ServerName {
+		if isRemove {
+			MapMgr.RemoveMap(meta)
+		} else {
+			MapMgr.AddMap(meta)
+		}
+	}
 }
 
 func (self *gs) OnRoleEnter(p *msg.LEnterGame) {

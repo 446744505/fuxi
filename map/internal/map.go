@@ -20,7 +20,7 @@ func NewMap() *mmap {
 	Map = &mmap{}
 	pvid, _ := strconv.Atoi(core.Args.Get("pvid"))
 	Map.Pvid = int32(pvid)
-	p := providee.NewProvidee(int32(pvid), "map")
+	p := providee.NewProvidee(int32(pvid), core.ServerMap)
 	p.SetEventHandler(&mapEventHandler{})
 	Map.AddService(p)
 	return Map

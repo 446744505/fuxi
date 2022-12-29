@@ -9,19 +9,24 @@ import (
 )
 
 var Providee *providee
+type OnProvideeUpdate func(isRemove bool, meta *core.ProvideeMeta)
 
 type providee struct {
 	core.CoreService
 	ProvideeServiceConfProp
+	onProvideeUpdate OnProvideeUpdate
 
 	lock sync.RWMutex
-	providerMap map[string]core.Session
-	providerList []core.Session
+	providerMap map[string]*Provider
+}
+
+type provideeWatcher struct {
+
 }
 
 func NewProvidee(pvid int32, name string) *providee {
 	Providee = &providee{
-		providerMap: make(map[string]core.Session),
+		providerMap: make(map[string]*Provider),
 	}
 	Providee.pvid = pvid
 	Providee.SetName(name)
@@ -31,42 +36,63 @@ func NewProvidee(pvid int32, name string) *providee {
 
 func (self *providee) Start() {
 	core.ETCD.Watch(core.NodeNameProvider, self)
+	core.ETCD.Watch(core.NodeNameProvidee, &provideeWatcher{})
 	self.CoreService.Start()
 }
 
 func (self *providee) OnAddSession(session core.Session) {
+	providerUrl := session.Port().HostPortString()
+	provider := self.GetProvider(providerUrl)
+	if provider != nil {
+		provider.session = session
+		return
+	}
+
 	self.lock.Lock()
 	defer self.lock.Unlock()
-	self.providerMap[session.Port().HostPortString()] = session
-	self.providerList = append(self.providerList, session)
+	provider = NewProvider(providerUrl)
+	provider.session = session
+	self.providerMap[providerUrl] = provider
 }
 
 func (self *providee) OnRemoveSession(session core.Session) {
 	self.lock.Lock()
 	defer self.lock.Unlock()
-	delete(self.providerMap, session.Port().HostPortString())
-	for i := 0; i < len(self.providerList); i++ {
-		if self.providerList[i].Port().HostPortString() == session.Port().HostPortString() {
-			self.providerList = append(self.providerList[:i], self.providerList[i+1:]...)
-			break
-		}
+	providerUrl := session.Port().HostPortString()
+	if provider, ok := self.providerMap[providerUrl]; ok {
+		provider.session = nil
 	}
 }
 
-func (self *providee) GetProvider(providerName string) core.Session {
+func (self *providee) GetProvider(providerUrl string) *Provider {
 	self.lock.RLock()
 	defer self.lock.RUnlock()
-	if provider, ok := self.providerMap[providerName]; ok {
+	if provider, ok := self.providerMap[providerUrl]; ok {
 		return provider
 	}
 	return nil
 }
 
-//todo 先随便选一个provider发往providee，后续要考虑顺序，其他providee已与某个provider断开
+func (self *providee) SetOnProvideeUpdate(cb OnProvideeUpdate) {
+	self.onProvideeUpdate = cb
+	self.lock.RLock()
+	defer self.lock.RUnlock()
+	for providerUrl, provider := range self.providerMap {
+		provider.ForProvidees(func(pvid int32, name string) {
+			meta := &core.ProvideeMeta{
+				ProviderUrl: providerUrl,
+				NodeName: name,
+				Pvid: pvid,
+			}
+			cb(false, meta)
+		})
+	}
+}
+
 func (self *providee) SendToProvidee(pvid int32, msg core.Msg) bool {
 	msg.SetToType(core.MsgToProvidee)
 	msg.SetToID(int64(pvid))
-	p := self.getOneProvider()
+	p := self.getOneProvider(pvid)
 	if p == nil {
 		core.Log.Errorln("not any provider can be used")
 		return false
@@ -82,11 +108,19 @@ func (self *providee) SendToProvidees(pvids []int32, msg core.Msg) {
 	}
 }
 
-func (self *providee) getOneProvider() core.Session {
+func (self *providee) getOneProvider(toPvid int32) *Provider {
 	self.lock.RLock()
 	defer self.lock.RUnlock()
-	i := rand.Intn(len(self.providerList))
-	return self.providerList[i]
+	var providers []*Provider
+	for _, provider := range self.providerMap {
+		if provider.IsActive() && provider.HaveProvidee(toPvid) {
+			providers = append(providers, provider)
+		}
+	}
+	if len(providers) == 0 {
+		return nil
+	}
+	return providers[rand.Intn(len(providers))]
 }
 
 func (self *providee) OnAdd(key, val string) {
@@ -99,6 +133,34 @@ func (self *providee) OnAdd(key, val string) {
 	}
 }
 
-func (self *providee) OnDelete(key, val string) {
+func (self *providee) OnDelete(_, _ string) {
 
+}
+
+func (self *provideeWatcher) OnAdd(key, val string) {
+	meta := &core.ProvideeMeta{}
+	meta.ValueOf(key, val)
+	provider := Providee.GetProvider(meta.ProviderUrl)
+	if provider == nil {
+		provider = NewProvider(meta.ProviderUrl)
+		Providee.lock.Lock()
+		Providee.providerMap[meta.ProviderUrl] = provider
+		Providee.lock.Unlock()
+	}
+	provider.AddProvidee(meta.Pvid, val)
+	if Providee.onProvideeUpdate != nil {
+		Providee.onProvideeUpdate(false, meta)
+	}
+}
+
+func (self *provideeWatcher) OnDelete(key, val string) {
+	meta := &core.ProvideeMeta{}
+	meta.ValueOf(key, val)
+	provider := Providee.GetProvider(meta.ProviderUrl)
+	if provider != nil {
+		provider.RemoveProvidee(meta.Pvid, meta.NodeName)
+	}
+	if Providee.onProvideeUpdate != nil {
+		Providee.onProvideeUpdate(true, meta)
+	}
 }
