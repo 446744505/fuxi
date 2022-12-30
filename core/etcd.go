@@ -52,7 +52,7 @@ type pair struct {
 type etcd struct {
 	conf clientv3.Config
 
-	closeSig chan bool
+	closeSig chan struct{}
 
 	kvChan chan *pair
 	kvs map[string]string
@@ -80,13 +80,13 @@ func InitEtcd(addr []string) {
 		kvs: make(map[string]string),
 		nodesChan: make(chan *pair, 1000),
 		nodes: make(map[string]*node),
-		closeSig: make(chan bool),
+		closeSig: make(chan struct{}),
 	}
 	go ETCD.startWork()
 }
 
 func StopEtcd() {
-	ETCD.closeSig <- true
+	close(ETCD.closeSig)
 }
 
 func (self *etcd) Put(key, val string) error {

@@ -25,6 +25,7 @@ func (self *CoreEventHandler) OnSessionRemoved(session Session) {
 
 func (self *CoreEventHandler) OnRcvMessage(msg Msg) {
 	if handler, ok := self.msgHandlers[msg.ID()]; ok {
+		defer PrintPanicStack()
 		handler(msg)
 	}
 }
