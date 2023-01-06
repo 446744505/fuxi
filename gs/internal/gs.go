@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"fmt"
 	"fuxi/core"
 	"fuxi/msg"
 	"fuxi/providee"
@@ -49,16 +48,12 @@ func (self *gs) OnRoleEnter(p *msg.LEnterGame) {
 	role.RoleId = p.RoleId
 	role.ClientSid = p.ClientSid
 	role.Provider = p.Session()
-	role.EnterMap()
 
 	self.roleLock.Lock()
 	self.roles[p.RoleId] = role
 	self.roleLock.Unlock()
 
-	ack := &msg.SEnterGame{}
-	ack.Name = fmt.Sprintf("玩家%v", role.RoleId)
-	self.SendToClient(p.RoleId, ack)
-	Log.Infof("role %d enter game", p.RoleId)
+	role.EnterGame()
 }
 
 func (self *gs) SendToClient(roleId int64, msg core.Msg) {
@@ -69,13 +64,21 @@ func (self *gs) SendToClient(roleId int64, msg core.Msg) {
 		Log.Errorf("not client role %d", roleId)
 		return
 	}
-
-	msg.SetToType(core.MsgToClient)
-	msg.SetToID(role.ClientSid)
-	role.Provider.Send(msg)
+	role.Send(msg)
 	return
 }
 
 func (self *gs) SendToProvidee(pvid int32, msg core.Msg) bool {
 	return providee.Providee.SendToProvidee(pvid, msg)
+}
+
+func (self *gs) OnProviderBroken(session core.Session) {
+	self.roleLock.Lock()
+	defer self.roleLock.Unlock()
+	for roleId, role := range self.roles {
+		if role.Provider == session {
+			role.ExitGame()
+			delete(self.roles, roleId)
+		}
+	}
 }

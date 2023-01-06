@@ -3,7 +3,8 @@ package provider
 import (
 	"fmt"
 	"fuxi/core"
-	"fuxi/switcher/linker/util"
+	"fuxi/switcher/util"
+	"github.com/davyxu/cellnet"
 	"github.com/davyxu/golog"
 	"strconv"
 	"strings"
@@ -47,9 +48,14 @@ func (self *provider) BindProvidee(pvid int32, name string, session core.Session
 	self.lock.Lock()
 	self.providees[pvid] = session
 	self.lock.Unlock()
-	Log.Infof("bind providee [%d] [%s] [%s]", pvid, name, session)
-	url := session.Port().HostPortString()
 
+	ctx := session.Port().Peer().(cellnet.ContextSet)
+	info, _ := ctx.GetContext(util.CtxTypeSessionInfo)
+	provideeInfo := info.(*util.ProvideeSessionInfo)
+	provideeInfo.Pvid = pvid
+	Log.Infof("bind providee [%d] [%s] [%s]", pvid, name, session)
+
+	url := session.Port().HostPortString()
 	meta := &core.ProvideeMeta{
 		NodeName: core.NodeNameProvidee,
 		ProviderUrl: url,
@@ -97,17 +103,43 @@ func (self *provider) GetProvidee(pvid int32) core.Session {
 }
 
 func init() {
-	util.DispatchToProvidee = func(dispatch *core.Dispatch) {
+	util.ClientToProvidee = func(dispatch *core.Dispatch) {
 		toPVID := int32(dispatch.ToID())
 		prov := Provider.GetProvidee(toPVID)
 		if prov == nil {
-			Log.Errorf("dispatch not exist providee %d, msgId: %d session: %s",
+			Log.Errorf("ClientToProvidee not exist providee %d, msgId: %d session: %s",
 				toPVID, dispatch.MsgId, dispatch.Session())
 			return
 		}
-		//todo 带上客户端的sessionid
+		session := dispatch.Session()
+		ctx := session.Port().Peer().(cellnet.ContextSet)
+		info, _ := ctx.GetContext(util.CtxTypeSessionInfo)
+		if linkerInfo, ok := info.(*util.LinkerSessionInfo); ok {
+			Log.Debugf("from client role %v msg to providee %v", linkerInfo.RoleId, toPVID)
+			//todo 带上roleid
+		}
 		prov.SendRaw(dispatch.MsgId, dispatch.MsgData)
 	}
+
+	util.ProvideeToProvidee = func(dispatch *core.Dispatch) {
+		toPVID := int32(dispatch.ToID())
+		prov := Provider.GetProvidee(toPVID)
+		if prov == nil {
+			Log.Errorf("ProvideeToProvidee not exist providee %d, msgId: %d session: %s",
+				toPVID, dispatch.MsgId, dispatch.Session())
+			return
+		}
+		session := dispatch.Session()
+		ctx := session.Port().Peer().(cellnet.ContextSet)
+		info, _ := ctx.GetContext(util.CtxTypeSessionInfo)
+		if provideeInfo, ok := info.(*util.ProvideeSessionInfo); ok{
+			Log.Debugf("from providee %v msg to providee %v", provideeInfo.Pvid, toPVID)
+			//todo 带上pvid
+		}
+
+		prov.SendRaw(dispatch.MsgId, dispatch.MsgData)
+	}
+
 	util.SendToProvidee = func(pvid int32, msg core.Msg) {
 		prov := Provider.GetProvidee(pvid)
 		if prov == nil {

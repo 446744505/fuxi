@@ -10,9 +10,9 @@ import (
 type MsgToType int16
 
 const (
-	MsgToProvidee MsgToType = 1
-	MsgToClient MsgToType = 2
-	MsgToServer MsgToType = 3
+	MsgToProvidee MsgToType = 1 //服务器之间
+	MsgToClient MsgToType = 2 //服务器到客户端
+	MsgToServer MsgToType = 3 //客户端到服务器
 )
 
 type MsgHead interface {

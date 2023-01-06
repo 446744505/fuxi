@@ -93,3 +93,23 @@ func (self *SEnterMap) Size() (ret int) {
 	ret += proto.SizeInt32(0, self.Pvid)
 	return
 }
+
+type CGetInfo struct {
+	core.CoreMsg `binary:"-"`
+}
+
+func (self *CGetInfo) ID() int32 {
+	return 5004
+}
+
+func (self *CGetInfo) Marshal(buffer *proto.Buffer) error {
+	return nil
+}
+
+func (self *CGetInfo) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
+	return nil
+}
+
+func (self *CGetInfo) Size() (ret int) {
+	return 0
+}

@@ -8,7 +8,7 @@ import (
 
 func GetRole(p core.Msg) *Role {
 	ctx := p.Session().Port().Peer().(cellnet.ContextSet)
-	if role, ok := ctx.GetContext(CtxRole); ok {
+	if role, ok := ctx.GetContext(CtxTypeRole); ok {
 		return role.(*Role)
 	}
 	Log.Errorf("no role at session %v", p.Session())

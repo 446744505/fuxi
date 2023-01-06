@@ -18,7 +18,7 @@ func (self *gsEventHandler) Init() {
 
 func (self *gsEventHandler) OnSessionRemoved(session core.Session) {
 	self.ProvideeEventHandler.OnSessionRemoved(session)
-	//todo 踢当前session的所有role下线
+	GS.OnProviderBroken(session)
 }
 
 func (self *gsEventHandler) RegisterSvr() {
@@ -28,4 +28,5 @@ func (self *gsEventHandler) RegisterSvr() {
 
 func (self *gsEventHandler) RegisterClient() {
 	self.RegisterMsg(&msg.SEnterGame{}, nil)
+	self.RegisterMsg(&msg.CGetInfo{}, self.OnCGetInfo)
 }

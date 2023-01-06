@@ -2,7 +2,7 @@ package linker
 
 import (
 	"fuxi/core"
-	"fuxi/switcher/linker/util"
+	"fuxi/switcher/util"
 	"github.com/davyxu/golog"
 	"strconv"
 	"strings"

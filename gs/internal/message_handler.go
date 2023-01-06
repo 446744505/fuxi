@@ -9,3 +9,8 @@ func (self *gsEventHandler) OnLEnterGame(p core.Msg) {
 	enter := p.(*msg.LEnterGame)
 	GS.OnRoleEnter(enter)
 }
+
+
+func (self *gsEventHandler) OnCGetInfo(p core.Msg) {
+	Log.Infof("gs received cgetinfo")
+}

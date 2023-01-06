@@ -3,12 +3,12 @@ package provider
 import (
 	"fuxi/core"
 	"fuxi/msg"
-	"fuxi/switcher/linker/util"
+	"fuxi/switcher/util"
 )
 
 func OnDispatch(p *core.Dispatch) {
 	if p.ToType() == core.MsgToProvidee {
-		util.DispatchToProvidee(p)
+		util.ProvideeToProvidee(p)
 	} else if p.ToType() == core.MsgToClient {
 		util.DispatchToClient(p)
 	} else {

@@ -10,3 +10,7 @@ func (self *mapEventHandler) OnGEnterMap(p core.Msg) {
 	role := &NetRole{}
 	role.OnEnterMap(enter)
 }
+
+func (self *mapEventHandler) OnCGetInfo(p core.Msg) {
+	Log.Infof("map received cgetinfo")
+}

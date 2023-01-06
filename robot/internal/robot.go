@@ -12,7 +12,7 @@ import (
 
 var Robot *robot
 var Log = golog.New("robot")
-var CtxRole = "role"
+var CtxTypeRole = "role"
 
 type robot struct {
 	core.NetControlImpl

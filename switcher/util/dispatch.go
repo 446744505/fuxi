@@ -7,6 +7,7 @@ type SendToProvideeFunc func(pvid int32, msg core.Msg)
 
 var (
 	DispatchToClient   DispatchToFunc
-	DispatchToProvidee DispatchToFunc
-	SendToProvidee SendToProvideeFunc
+	ClientToProvidee DispatchToFunc
+	ProvideeToProvidee DispatchToFunc
+	SendToProvidee     SendToProvideeFunc
 )

@@ -81,7 +81,7 @@ func (self *Role) tryEnterGame() {
 
 	Log.Debugf("role %v start connect", self.roleId)
 	ctx := port.Peer().(cellnet.ContextSet)
-	ctx.SetContext(CtxRole, self)
+	ctx.SetContext(CtxTypeRole, self)
 	self.linker = l
 }
 
@@ -93,12 +93,26 @@ func (self *Role) Send(msg core.Msg) bool {
 	return true
 }
 
+func (self *Role) SendToGs(msg core.Msg) bool {
+	msg.SetToType(core.MsgToServer)
+	msg.SetToID(int64(self.gsPvid))
+	return self.Send(msg)
+}
+
+func (self *Role) SendToMap(msg core.Msg) bool {
+	msg.SetToType(core.MsgToServer)
+	msg.SetToID(int64(self.mapPvid))
+	return self.Send(msg)
+}
+
 func (self *Role) EnterGame(enter *msg.SEnterGame) {
 	self.name = enter.Name
 	Log.Infof("role %s enter gs", enter.Name)
+	self.SendToGs(&msg.CGetInfo{})
 }
 
 func (self *Role) EnterMap(enter *msg.SEnterMap) {
 	self.mapPvid = enter.Pvid
 	Log.Infof("role %s enter map %v", self.name, enter.Pvid)
+	self.SendToMap(&msg.CGetInfo{})
 }
