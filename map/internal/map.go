@@ -30,7 +30,7 @@ func (self *mmap) SendToClient(providerName string, clientSid int64, msg core.Ms
 	if provider := providee.Providee.GetProvider(providerName); provider == nil {
 		return false
 	} else {
-		msg.SetToID(clientSid)
+		msg.SetFTId(clientSid)
 		msg.SetToType(core.MsgToClient)
 		provider.Send(msg)
 	}

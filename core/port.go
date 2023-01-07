@@ -12,10 +12,6 @@ import (
 
 type CtxType int
 
-const (
-	CtxTypeSession = 1
-)
-
 type Port interface {
 	Controler
 	Peer() cellnet.Peer
@@ -28,36 +24,37 @@ type Port interface {
 type CorePort struct {
 	CorePortConf
 	service Service
-	lock sync.Mutex
-	peer cellnet.Peer
+
+	pLock sync.Mutex
+	peer  cellnet.Peer
+
+	sLock sync.RWMutex
+	sessions map[int64]Session
 }
 
 func (self *CorePort) Start() {
-	self.lock.Lock()
-	defer self.lock.Unlock()
+	self.pLock.Lock()
+	defer self.pLock.Unlock()
 	self.peer = peer.NewGenericPeer(self.typ, "", self.HostPortString(), nil)
 	evtHandler := self.Service().EventHandler()
 	creater := self.Service().SessionCreater()
 	dipHandler := self.Service().DispatchHandler()
 	proc.BindProcessorHandler(self.peer, "fxtcp.ltv", func(ev cellnet.Event) {
-		ctx := self.peer.(cellnet.ContextSet)
 		switch msg := ev.Message().(type) {
 		case *cellnet.SessionAccepted, *cellnet.SessionConnected:
 			session := creater(ev.Session())
 			session.SetPort(self)
+			self.AddSession(session.ID(), session)
 			evtHandler.OnSessionAdd(session)
-			ctx.SetContext(CtxTypeSession, session)
 		case *cellnet.SessionClosed:
-			if val, ok := ctx.GetContext(CtxTypeSession); ok {
-				session := val.(Session)
+			if session, ok := self.GetSession(ev.Session().ID()); ok {
 				Log.Infof("session %s closed, reason: %s", session, msg.Reason)
 				evtHandler.OnSessionRemoved(session)
 			} else {
 				Log.Warnf("session closed, reason: %s", msg.Reason)
 			}
 		case Msg:
-			if val, ok := ctx.GetContext(CtxTypeSession); ok {
-				session := val.(Session)
+			if session, ok := self.GetSession(ev.Session().ID()); ok {
 				msg.SetSession(session)
 				if dispatch, ok := msg.(*Dispatch); ok {
 					dipHandler(dispatch)
@@ -77,13 +74,32 @@ func (self *CorePort) Start() {
 	self.peer.Start()
 }
 
+func (self *CorePort) AddSession(id int64, session Session) {
+	self.sLock.Lock()
+	defer self.sLock.Unlock()
+	self.sessions[id] = session
+}
+
+func (self *CorePort) RemoveSession(id int64) {
+	self.sLock.Lock()
+	defer self.sLock.Unlock()
+	delete(self.sessions, id)
+}
+
+func (self *CorePort) GetSession(id int64) (session Session, ok bool) {
+	self.sLock.RLock()
+	defer self.sLock.RUnlock()
+	session, ok = self.sessions[id]
+	return
+}
+
 func (self *CorePort) Name() string {
 	return self.name
 }
 
 func (self *CorePort) Stop() {
-	self.lock.Lock()
-	defer self.lock.Unlock()
+	self.pLock.Lock()
+	defer self.pLock.Unlock()
 	self.peer.Stop()
 }
 

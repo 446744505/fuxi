@@ -77,6 +77,44 @@ func (self *LEnterGame) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt pr
 
 func (self *LEnterGame) Size() (ret int) {
 	ret += proto.SizeInt64(0, self.RoleId)
-	ret += proto.SizeInt64(0, self.ClientSid)
+	ret += proto.SizeInt64(1, self.ClientSid)
+	return
+}
+
+type MessageBox struct {
+	core.CoreMsg `binary:"-"`
+	UniqId       int64
+	MsgId        int32
+	MsgData      []byte
+}
+
+func (self *MessageBox) ID() int32 {
+	return 1003
+}
+
+func (self *MessageBox) Marshal(buffer *proto.Buffer) error {
+	proto.MarshalInt64(buffer, 0, self.UniqId)
+	proto.MarshalInt32(buffer, 1, self.MsgId)
+	proto.MarshalBytes(buffer, 2, self.MsgData)
+	return nil
+}
+
+func (self *MessageBox) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
+	switch fieldIndex {
+	case 0:
+		return proto.UnmarshalInt64(buffer, wt, &self.UniqId)
+	case 1:
+		return proto.UnmarshalInt32(buffer, wt, &self.MsgId)
+	case 2:
+		return proto.UnmarshalBytes(buffer, wt, &self.MsgData)
+	}
+
+	return proto.ErrUnknownField
+}
+
+func (self *MessageBox) Size() (ret int) {
+	ret += proto.SizeInt64(0, self.UniqId)
+	ret += proto.SizeInt32(1, self.MsgId)
+	ret += proto.SizeBytes(2, self.MsgData)
 	return
 }

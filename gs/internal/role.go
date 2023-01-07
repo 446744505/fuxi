@@ -52,7 +52,7 @@ func (self *NetRole) exitMap() {
 
 func (self *NetRole) Send(msg core.Msg) {
 	msg.SetToType(core.MsgToClient)
-	msg.SetToID(self.ClientSid)
+	msg.SetFTId(self.ClientSid)
 	self.Provider.Send(msg)
 }
 

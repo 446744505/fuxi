@@ -12,5 +12,5 @@ func (self *mapEventHandler) OnGEnterMap(p core.Msg) {
 }
 
 func (self *mapEventHandler) OnCGetInfo(p core.Msg) {
-	Log.Infof("map received cgetinfo")
+	Log.Infof("map received role %v cgetinfo", p.FTId())
 }

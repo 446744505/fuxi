@@ -91,7 +91,7 @@ func (self *providee) SetOnProvideeUpdate(cb OnProvideeUpdate) {
 
 func (self *providee) SendToProvidee(pvid int32, msg core.Msg) bool {
 	msg.SetToType(core.MsgToProvidee)
-	msg.SetToID(int64(pvid))
+	msg.SetFTId(int64(pvid))
 	p := self.getOneProvider(pvid)
 	if p == nil {
 		core.Log.Errorln("not any provider can be used")

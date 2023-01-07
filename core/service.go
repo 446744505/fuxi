@@ -88,7 +88,7 @@ func (self *CoreServiceBundle) SessionCreater() SessionCreater {
 	}
 
 	return func(raw cellnet.Session) Session {
-		return &CoreSession{raw: raw}
+		return NewCoreSession(raw)
 	}
 }
 

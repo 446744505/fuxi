@@ -12,5 +12,5 @@ func (self *gsEventHandler) OnLEnterGame(p core.Msg) {
 
 
 func (self *gsEventHandler) OnCGetInfo(p core.Msg) {
-	Log.Infof("gs received cgetinfo")
+	Log.Infof("gs received role %v cgetinfo", p.FTId())
 }

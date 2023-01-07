@@ -121,7 +121,7 @@ func SendLTVPacket(writer io.Writer, ctx cellnet.ContextSet, data interface{}) e
 
 	if msg, ok := data.(Msg); ok {
 		msgToType = int16(msg.ToType())
-		msgToId = msg.ToID()
+		msgToId = msg.FTId()
 	}
 
 	pkt := make([]byte, bodySize+msgInfoSize+len(msgData))

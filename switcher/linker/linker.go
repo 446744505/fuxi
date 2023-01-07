@@ -65,7 +65,7 @@ func (self *linker) GetClient(sid int64) core.Session {
 
 func init() {
 	util.DispatchToClient = func(dispatch *core.Dispatch) {
-		sid := dispatch.ToID()
+		sid := dispatch.FTId()
 		cli := Linker.GetClient(sid)
 		if cli == nil {
 			Log.Errorf("not exist client %d, msgId: %d session: %s",

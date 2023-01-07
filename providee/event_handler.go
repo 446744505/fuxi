@@ -12,6 +12,7 @@ type ProvideeEventHandler struct {
 func (self *ProvideeEventHandler) Init() {
 	self.RegisterMsg(&msg.BindPvid{}, nil)
 	self.RegisterMsg(&msg.UnBindPvid{}, nil)
+	self.RegisterMsg(&msg.MessageBox{}, self.OnMessageBox)
 }
 
 func (self *ProvideeEventHandler) OnSessionAdd(session core.Session) {

@@ -95,13 +95,13 @@ func (self *Role) Send(msg core.Msg) bool {
 
 func (self *Role) SendToGs(msg core.Msg) bool {
 	msg.SetToType(core.MsgToServer)
-	msg.SetToID(int64(self.gsPvid))
+	msg.SetFTId(int64(self.gsPvid))
 	return self.Send(msg)
 }
 
 func (self *Role) SendToMap(msg core.Msg) bool {
 	msg.SetToType(core.MsgToServer)
-	msg.SetToID(int64(self.mapPvid))
+	msg.SetFTId(int64(self.mapPvid))
 	return self.Send(msg)
 }
 

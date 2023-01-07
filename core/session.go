@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/davyxu/cellnet"
 	"net"
+	"sync"
 )
 
 type SessionCreater func(raw cellnet.Session) Session
@@ -16,12 +17,38 @@ type Session interface {
 	Port() Port
 	SetRaw(raw cellnet.Session)
 	Raw() cellnet.Session
+	SetContext(key string, val interface{})
+	GetContext(key string) (interface{}, bool)
 }
 
 type CoreSession struct {
 	raw cellnet.Session
 	port Port
+
+	lock sync.RWMutex
+	ctx map[string]interface{}
 }
+
+func NewCoreSession(raw cellnet.Session) *CoreSession {
+	return &CoreSession{
+		raw: raw,
+		ctx: make(map[string]interface{}),
+	}
+}
+
+func (self *CoreSession) SetContext(key string, val interface{}) {
+	self.lock.Lock()
+	defer self.lock.Unlock()
+	self.ctx[key] = val
+}
+
+func (self *CoreSession) GetContext(key string) (val interface{}, ok bool) {
+	self.lock.Lock()
+	defer self.lock.Unlock()
+	val, ok = self.ctx[key]
+	return
+}
+
 
 func (self *CoreSession) Send(msg Msg) {
 	self.raw.Send(msg)

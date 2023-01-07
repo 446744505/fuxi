@@ -4,7 +4,6 @@ import (
 	"fuxi/core"
 	"fuxi/msg"
 	"fuxi/switcher/util"
-	"github.com/davyxu/cellnet"
 )
 
 func OnDispatch(p *core.Dispatch) {
@@ -17,9 +16,7 @@ func OnDispatch(p *core.Dispatch) {
 
 func (self *linkerEventHandler) OnCEnterGame(p core.Msg) {
 	center := p.(*msg.CEnterGame)
-	peer := p.Session().Port().Peer()
-	ctx := peer.(cellnet.ContextSet)
-	info, _ := ctx.GetContext(util.CtxTypeSessionInfo)
+	info, _ := p.Session().GetContext(util.CtxTypeSessionInfo)
 	linkerInfo := info.(*util.LinkerSessionInfo)
 	linkerInfo.RoleId = center.RoleId
 

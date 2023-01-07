@@ -6,7 +6,6 @@ import (
 	"github.com/davyxu/golog"
 	"math/rand"
 	"strconv"
-	"strings"
 	"sync"
 )
 
@@ -93,14 +92,6 @@ func (self *linkerWatcher) OnAdd(key, val string) {
 	meta := &core.SwitcherMeta{}
 	meta.ValueOf(key)
 	Robot.AddLinker(meta.LinkerUrl, meta.ProviderUrl)
-
-	arr := strings.Split(val, ":")
-	host := arr[0]
-	port, _:= strconv.Atoi(arr[1])
-	porter := core.NewConnector(key, host, port)
-	if core.ServiceAddPort(&Robot.service, porter) {
-		porter.Start()
-	}
 
 	core.ETCD.Watch(fmt.Sprintf("%s/%s", core.NodeNameProvidee, meta.ProviderUrl), &gsWatcher{})
 }

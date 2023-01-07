@@ -17,14 +17,14 @@ const (
 
 type MsgHead interface {
 	SetToType(typ MsgToType)
-	SetToID(id int64)
+	SetFTId(id int64)
 	ToType() MsgToType
-	ToID() int64
+	FTId() int64
 }
 
 type CoreMsgHead struct {
 	toType MsgToType
-	toID int64
+	ftId   int64
 }
 
 type Msg interface {
@@ -57,16 +57,16 @@ func (self *CoreMsgHead) SetToType(typ MsgToType) {
 	self.toType = typ
 }
 
-func (self *CoreMsgHead) SetToID(id int64) {
-	self.toID = id
+func (self *CoreMsgHead) SetFTId(id int64) {
+	self.ftId = id
 }
 
 func (self *CoreMsgHead) ToType() MsgToType {
 	return self.toType
 }
 
-func (self *CoreMsgHead) ToID() int64 {
-	return self.toID
+func (self *CoreMsgHead) FTId() int64 {
+	return self.ftId
 }
 
 func RegisterMsg(msg Msg) {
@@ -80,7 +80,7 @@ func RegisterMsg(msg Msg) {
 func NewDispatch(msgToType MsgToType, msgToId int64, msgId int, msgData []byte) interface{} {
 	d := &Dispatch{}
 	d.toType = msgToType
-	d.toID = msgToId
+	d.ftId = msgToId
 	d.MsgData = msgData
 	d.MsgId = msgId
 	return d
