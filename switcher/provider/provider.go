@@ -17,14 +17,11 @@ var Provider *provider
 type provider struct {
 	core.CoreService
 
-	lock sync.RWMutex
-	providees map[int32]core.Session
+	providees sync.Map
 }
 
 func NewProvider() *provider {
-	Provider = &provider{
-		providees: make(map[int32]core.Session),
-	}
+	Provider = &provider{}
 	Provider.SetName("provider")
 	Provider.SetEventHandler(&providerEventHandler{})
 	Provider.SetDispatcherHandler(OnDispatch)
@@ -45,9 +42,7 @@ func NewProvider() *provider {
 }
 
 func (self *provider) BindProvidee(pvid int32, name string, session core.Session) {
-	self.lock.Lock()
-	self.providees[pvid] = session
-	self.lock.Unlock()
+	self.providees.Store(pvid, session)
 
 	info, _ := session.GetContext(util.CtxTypeSessionInfo)
 	provideeInfo := info.(*util.ProvideeSessionInfo)
@@ -65,15 +60,15 @@ func (self *provider) BindProvidee(pvid int32, name string, session core.Session
 
 func (self *provider) UnBindProvidee(pvid int32) {
 	var url = ""
-	self.lock.Lock()
-	if pvid > 0 && self.providees != nil {
-		if session, ok := self.providees[pvid]; ok {
-			delete(self.providees, pvid)
+	if pvid > 0 {
+		if value, ok := self.providees.Load(pvid); ok {
+			self.providees.Delete(pvid)
+			session := value.(core.Session)
 			url = session.Port().HostPortString()
 			Log.Infof("unbind providee [%d]", pvid)
 		}
 	}
-	self.lock.Unlock()
+
 	if url != "" {
 		core.ETCD.Delete(fmt.Sprintf("providee/%v/%v", url, pvid))
 	}
@@ -81,22 +76,21 @@ func (self *provider) UnBindProvidee(pvid int32) {
 
 func (self *provider) RemoveSession(session core.Session) {
 	var deleteId int32
-	self.lock.RLock()
-	for pvid, tmp := range self.providees {
+	self.providees.Range(func(key, value interface{}) bool {
+		pvid := key.(int32)
+		tmp := value.(core.Session)
 		if tmp.ID() == session.ID() {
 			deleteId = pvid
-			break
+			return false
 		}
-	}
-	self.lock.RUnlock()
+		return true
+	})
 	self.UnBindProvidee(deleteId)
 }
 
 func (self *provider) GetProvidee(pvid int32) core.Session {
-	self.lock.RLock()
-	defer self.lock.RUnlock()
-	if sess, ok := self.providees[pvid]; ok {
-		return sess
+	if sess, ok := self.providees.Load(pvid); ok {
+		return sess.(core.Session)
 	}
 	return nil
 }

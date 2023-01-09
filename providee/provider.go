@@ -9,14 +9,12 @@ type Provider struct {
 	providerUrl string
 	session     core.Session
 
-	lock sync.RWMutex
-	provideePvids map[int32]string // key=pvid value=server name
+	providees sync.Map // key=pvid value=server name
 }
 
 func NewProvider(url string) *Provider {
 	return &Provider{
 		providerUrl: url,
-		provideePvids: make(map[int32]string),
 	}
 }
 
@@ -33,12 +31,16 @@ func (self *Provider) Send(msg core.Msg) bool {
 }
 
 func (self *Provider) HaveProvidee(pvid int32) bool {
-	self.lock.RLock()
-	defer self.lock.RUnlock()
 	if pvid == 0 {
-		return len(self.provideePvids) > 0
+		have := false
+		self.providees.Range(func(key, value interface{}) bool {
+			have = true
+			return false //有任意一个就跳出循环
+		})
+		return have
 	}
-	if _, ok := self.provideePvids[pvid]; ok {
+
+	if _, ok := self.providees.Load(pvid); ok {
 		return true
 	}
 
@@ -46,23 +48,20 @@ func (self *Provider) HaveProvidee(pvid int32) bool {
 }
 
 func (self *Provider) AddProvidee(pvid int32, name string) {
-	self.lock.Lock()
-	defer self.lock.Unlock()
-	self.provideePvids[pvid] = name
+	self.providees.Store(pvid, name)
 	core.Log.Infof("providee add other providee %v[%v]", pvid, name)
 }
 
 func (self *Provider) RemoveProvidee(pvid int32, name string) {
-	self.lock.Lock()
-	defer self.lock.Unlock()
-	delete(self.provideePvids, pvid)
+	self.providees.Delete(pvid)
 	core.Log.Infof("providee remove other providee %v[%v]", pvid, name)
 }
 
 func (self *Provider) ForProvidees(cb func(int32, string)) {
-	self.lock.RLock()
-	defer self.lock.RUnlock()
-	for pvid, name := range self.provideePvids {
+	self.providees.Range(func(k, v interface{}) bool {
+		pvid := k.(int32)
+		name := v.(string)
 		cb(pvid, name)
-	}
+		return true
+	})
 }

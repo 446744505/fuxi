@@ -25,27 +25,21 @@ type CoreSession struct {
 	raw cellnet.Session
 	port Port
 
-	lock sync.RWMutex
-	ctx map[string]interface{}
+	ctx sync.Map
 }
 
 func NewCoreSession(raw cellnet.Session) *CoreSession {
 	return &CoreSession{
 		raw: raw,
-		ctx: make(map[string]interface{}),
 	}
 }
 
 func (self *CoreSession) SetContext(key string, val interface{}) {
-	self.lock.Lock()
-	defer self.lock.Unlock()
-	self.ctx[key] = val
+	self.ctx.Store(key, val)
 }
 
 func (self *CoreSession) GetContext(key string) (val interface{}, ok bool) {
-	self.lock.Lock()
-	defer self.lock.Unlock()
-	val, ok = self.ctx[key]
+	val, ok = self.ctx.Load(key)
 	return
 }
 

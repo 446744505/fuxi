@@ -16,8 +16,7 @@ type providee struct {
 	ProvideeServiceConfProp
 	onProvideeUpdate OnProvideeUpdate
 
-	lock sync.RWMutex
-	providerMap map[string]*Provider
+	providerMap sync.Map
 }
 
 type provideeWatcher struct {
@@ -25,9 +24,7 @@ type provideeWatcher struct {
 }
 
 func NewProvidee(pvid int32, name string) *providee {
-	Providee = &providee{
-		providerMap: make(map[string]*Provider),
-	}
+	Providee = &providee{}
 	Providee.pvid = pvid
 	Providee.SetName(name)
 	Providee.SetEventHandler(&ProvideeEventHandler{})
@@ -48,36 +45,30 @@ func (self *providee) OnAddSession(session core.Session) {
 		return
 	}
 
-	self.lock.Lock()
-	defer self.lock.Unlock()
 	provider = NewProvider(providerUrl)
 	provider.session = session
-	self.providerMap[providerUrl] = provider
+	self.providerMap.Store(providerUrl, provider)
 }
 
 func (self *providee) OnRemoveSession(session core.Session) {
-	self.lock.Lock()
-	defer self.lock.Unlock()
 	providerUrl := session.Port().HostPortString()
-	if provider, ok := self.providerMap[providerUrl]; ok {
-		provider.session = nil
+	if provider, ok := self.providerMap.Load(providerUrl); ok {
+		provider.(*Provider).session = nil
 	}
 }
 
 func (self *providee) GetProvider(providerUrl string) *Provider {
-	self.lock.RLock()
-	defer self.lock.RUnlock()
-	if provider, ok := self.providerMap[providerUrl]; ok {
-		return provider
+	if provider, ok := self.providerMap.Load(providerUrl); ok {
+		return provider.(*Provider)
 	}
 	return nil
 }
 
 func (self *providee) SetOnProvideeUpdate(cb OnProvideeUpdate) {
 	self.onProvideeUpdate = cb
-	self.lock.RLock()
-	defer self.lock.RUnlock()
-	for providerUrl, provider := range self.providerMap {
+	self.providerMap.Range(func(key, value interface{}) bool {
+		providerUrl := key.(string)
+		provider := value.(*Provider)
 		provider.ForProvidees(func(pvid int32, name string) {
 			meta := &core.ProvideeMeta{
 				ProviderUrl: providerUrl,
@@ -86,7 +77,8 @@ func (self *providee) SetOnProvideeUpdate(cb OnProvideeUpdate) {
 			}
 			cb(false, meta)
 		})
-	}
+		return true
+	})
 }
 
 func (self *providee) SendToProvidee(pvid int32, msg core.Msg) bool {
@@ -94,7 +86,7 @@ func (self *providee) SendToProvidee(pvid int32, msg core.Msg) bool {
 	msg.SetFTId(int64(pvid))
 	p := self.getOneProvider(pvid)
 	if p == nil {
-		core.Log.Errorln("not any provider can be used")
+		core.Log.Errorf("provider %v can not used", pvid)
 		return false
 	}
 	p.Send(msg)
@@ -109,14 +101,14 @@ func (self *providee) SendToProvidees(pvids []int32, msg core.Msg) {
 }
 
 func (self *providee) getOneProvider(toPvid int32) *Provider {
-	self.lock.RLock()
-	defer self.lock.RUnlock()
 	var providers []*Provider
-	for _, provider := range self.providerMap {
+	self.providerMap.Range(func(_, value interface{}) bool {
+		provider := value.(*Provider)
 		if provider.IsActive() && provider.HaveProvidee(toPvid) {
 			providers = append(providers, provider)
 		}
-	}
+		return true
+	})
 	if len(providers) == 0 {
 		return nil
 	}
@@ -143,9 +135,7 @@ func (self *provideeWatcher) OnAdd(key, val string) {
 	provider := Providee.GetProvider(meta.ProviderUrl)
 	if provider == nil {
 		provider = NewProvider(meta.ProviderUrl)
-		Providee.lock.Lock()
-		Providee.providerMap[meta.ProviderUrl] = provider
-		Providee.lock.Unlock()
+		Providee.providerMap.Store(meta.ProviderUrl, provider)
 	}
 	provider.AddProvidee(meta.Pvid, val)
 	if Providee.onProvideeUpdate != nil {

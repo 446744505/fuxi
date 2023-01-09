@@ -43,7 +43,6 @@ func NewAcceptor(name, host string, port int) Port {
 	t.name = name
 	t.host = host
 	t.port = port
-	t.sessions = make(map[int64]Session)
 	return t
 }
 
@@ -53,6 +52,5 @@ func NewConnector(name, host string, port int) Port {
 	t.name = name
 	t.host = host
 	t.port = port
-	t.sessions = make(map[int64]Session)
 	return t
 }

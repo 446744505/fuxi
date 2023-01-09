@@ -58,8 +58,7 @@ type etcd struct {
 	kvs map[string]string
 
 	nodesChan chan *pair
-	lockNodes sync.Mutex
-	nodes map[string]*node
+	nodes sync.Map
 
 	client        *clientv3.Client
 	lease         clientv3.Lease
@@ -79,7 +78,6 @@ func InitEtcd(addr []string) {
 		kvChan: make(chan *pair, 1000),
 		kvs: make(map[string]string),
 		nodesChan: make(chan *pair, 1000),
-		nodes: make(map[string]*node),
 		closeSig: make(chan struct{}),
 	}
 	go ETCD.startWork()
@@ -153,9 +151,7 @@ func (self *etcd) startWork() error {
 				}
 			}
 		case p := <- self.nodesChan:
-			self.lockNodes.Lock()
-			self.nodes[p.key] = p.val.(*node)
-			self.lockNodes.Unlock()
+			self.nodes.Store(p.key, p.val.(*node))
 			go self.doWatcher(p.key)
 		case rsp := <-self.keepAliveChan:
 			if rsp == nil {
@@ -245,15 +241,15 @@ func (self *etcd) doWatcher(prefix string) error {
 }
 
 func (self *etcd) putNode(prefix, key, val string) {
-	self.lockNodes.Lock()
-	defer self.lockNodes.Unlock()
-	self.nodes[prefix].put(key, val)
+	if value, ok := self.nodes.Load(prefix); ok {
+		node := value.(*node)
+		node.put(key, val)
+	}
 }
 
 func (self *etcd) deleteNode(prefix, key string) {
-	self.lockNodes.Lock()
-	defer self.lockNodes.Unlock()
-	if node, ok := self.nodes[prefix]; ok {
+	if value, ok := self.nodes.Load(prefix); ok {
+		node := value.(*node)
 		node.delete(key)
 	}
 }
@@ -270,7 +266,7 @@ func (self *etcd) clean() {
 	close(self.nodesChan)
 	close(self.closeSig)
 	self.kvs = nil
-	self.nodes = nil
+	self.nodes = sync.Map{}
 }
 
 func (self *node) put(key, val string) {

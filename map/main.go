@@ -21,6 +21,7 @@ func main() {
 
 	m := internal.NewMap()
 	m.Start()
+	internal.Log.Infof("map server started")
 	m.Wait()
 	core.StopEtcd()
 }

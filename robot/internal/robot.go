@@ -17,8 +17,7 @@ type robot struct {
 	core.NetControlImpl
 	service core.CoreService
 
-	linkerLock sync.RWMutex
-	linkers map[string]*Linker
+	linkers sync.Map
 }
 
 type linkerWatcher struct {
@@ -28,9 +27,7 @@ type gsWatcher struct {
 }
 
 func NewRobot() *robot {
-	Robot = &robot{
-		linkers: make(map[string]*Linker),
-	}
+	Robot = &robot{}
 	Robot.AddService(&Robot.service)
 	Robot.service.SetEventHandler(&robotEventHandler{})
 
@@ -45,23 +42,20 @@ func NewRobot() *robot {
 }
 
 func (self *robot) AddLinker(linkerUrl, providerUrl string) {
-	self.linkerLock.Lock()
-	defer self.linkerLock.Unlock()
-	if linker, ok := self.linkers[linkerUrl]; ok {
-		linker.providerUrl = providerUrl
+	if linker, ok := self.linkers.Load(linkerUrl); ok {
+		linker.(*Linker).providerUrl = providerUrl
 	} else {
-		self.linkers[linkerUrl] = &Linker{
+		linker := &Linker{
 			linkerUrl:   linkerUrl,
 			providerUrl: providerUrl,
-			gsPvids:     make(map[int32]bool),
 		}
+		self.linkers.Store(linkerUrl, linker)
 	}
 }
 
 func (self *robot) UpdateGs(isRemove bool, providerUrl string, pvid int32) {
-	self.linkerLock.Lock()
-	defer self.linkerLock.Unlock()
-	for _, linker := range self.linkers {
+	self.linkers.Range(func(_, value interface{}) bool {
+		linker := value.(*Linker)
 		if linker.providerUrl == providerUrl {
 			if isRemove {
 				linker.RemoveGs(pvid)
@@ -69,18 +63,20 @@ func (self *robot) UpdateGs(isRemove bool, providerUrl string, pvid int32) {
 				linker.AddGs(pvid)
 			}
 		}
-	}
+		return true
+	})
 }
 
 func (self *robot) RandomLinker(gsPvid int32) *Linker {
-	self.linkerLock.RLock()
-	defer self.linkerLock.RUnlock()
 	var linkers []*Linker
-	for _, link := range self.linkers {
-		if link.HaveGs(gsPvid) {
-			linkers = append(linkers, link)
+	self.linkers.Range(func(_, value interface{}) bool {
+		linker := value.(*Linker)
+		if linker.HaveGs(gsPvid) {
+			linkers = append(linkers, linker)
 		}
-	}
+		return true
+	})
+
 	if len(linkers) == 0 {
 		return nil
 	}

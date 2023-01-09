@@ -21,6 +21,7 @@ func main() {
 
 	r := internal.NewRobot()
 	r.Start()
+	internal.Log.Infof("robot client started")
 	r.Wait()
 	core.StopEtcd()
 }

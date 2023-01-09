@@ -16,14 +16,11 @@ type gs struct {
 	core.NetControlImpl
 
 	Pvid int32
-	roleLock sync.RWMutex
-	roles map[int64]*NetRole
+	roles sync.Map
 }
 
 func NewGs() *gs {
-	GS = &gs{
-		roles: make(map[int64]*NetRole),
-	}
+	GS = &gs{}
 	pvid, _ := strconv.Atoi(core.Args.Get("pvid"))
 	GS.Pvid = int32(pvid)
 	p := providee.NewProvidee(GS.Pvid, core.ServerGs)
@@ -48,23 +45,18 @@ func (self *gs) OnRoleEnter(p *msg.LEnterGame) {
 	role.RoleId = p.RoleId
 	role.ClientSid = p.ClientSid
 	role.Provider = p.Session()
-
-	self.roleLock.Lock()
-	self.roles[p.RoleId] = role
-	self.roleLock.Unlock()
+	self.roles.Store(p.RoleId, role)
 
 	role.EnterGame()
 }
 
 func (self *gs) SendToClient(roleId int64, msg core.Msg) {
-	self.roleLock.RLock()
-	role, ok := self.roles[roleId]
-	self.roleLock.RUnlock()
+	role, ok := self.roles.Load(roleId)
 	if !ok {
 		Log.Errorf("not client role %d", roleId)
 		return
 	}
-	role.Send(msg)
+	role.(*NetRole).Send(msg)
 	return
 }
 
@@ -73,12 +65,13 @@ func (self *gs) SendToProvidee(pvid int32, msg core.Msg) bool {
 }
 
 func (self *gs) OnProviderBroken(session core.Session) {
-	self.roleLock.Lock()
-	defer self.roleLock.Unlock()
-	for roleId, role := range self.roles {
+	self.roles.Range(func(key, value interface{}) bool {
+		roleId := key.(int64)
+		role := value.(*NetRole)
 		if role.Provider == session {
 			role.ExitGame()
-			delete(self.roles, roleId)
+			self.roles.Delete(roleId)
 		}
-	}
+		return true
+	})
 }

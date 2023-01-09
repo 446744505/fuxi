@@ -84,7 +84,6 @@ func RecvLTVPacket(reader io.Reader, maxPacketSize int) (msg interface{}, err er
 	// 将字节数组和消息ID用户解出消息
 	msg, _, err = codec.DecodeMessage(mid, msgData)
 	if err != nil {
-		// TODO 接收错误时，返回消息
 		return nil, err
 	}
 

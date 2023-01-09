@@ -21,6 +21,7 @@ func main() {
 
 	g := internal.NewGs()
 	g.Start()
+	internal.Log.Infof("game server started")
 	g.Wait()
 	core.StopEtcd()
 }

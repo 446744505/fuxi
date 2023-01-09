@@ -15,14 +15,11 @@ var Linker *linker
 type linker struct {
 	core.CoreService
 
-	lock sync.RWMutex
-	clients map[int64]core.Session
+	clients sync.Map
 }
 
 func NewLinker() *linker {
-	Linker = &linker{
-		clients: make(map[int64]core.Session),
-	}
+	Linker = &linker{}
 	Linker.SetName("linker")
 	Linker.SetEventHandler(&linkerEventHandler{})
 	Linker.SetDispatcherHandler(OnDispatch)
@@ -43,22 +40,16 @@ func NewLinker() *linker {
 }
 
 func (self *linker) AddSession(session core.Session) {
-	self.lock.Lock()
-	defer self.lock.Unlock()
-	self.clients[session.ID()] = session
+	self.clients.Store(session.ID(), session)
 }
 
 func (self *linker) RemoveSession(session core.Session) {
-	self.lock.Lock()
-	defer self.lock.Unlock()
-	delete(self.clients, session.ID())
+	self.clients.Delete(session.ID())
 }
 
 func (self *linker) GetClient(sid int64) core.Session {
-	self.lock.RLock()
-	defer self.lock.RUnlock()
-	if sess, ok := self.clients[sid]; ok {
-		return sess
+	if sess, ok := self.clients.Load(sid); ok {
+		return sess.(core.Session)
 	}
 	return nil
 }

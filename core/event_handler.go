@@ -31,6 +31,12 @@ func (self *CoreEventHandler) OnRcvMessage(msg Msg) {
 	}
 }
 
+func (self *CoreEventHandler) OnRcvMessageSync(msg Msg) {
+	if handler, ok := self.msgHandlers[msg.ID()]; ok {
+		handler(msg)
+	}
+}
+
 func (self *CoreEventHandler) RegisterMsg(msg Msg, handler MsgHandler) {
 	if handler != nil {
 		if self.msgHandlers == nil {

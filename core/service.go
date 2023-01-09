@@ -18,8 +18,7 @@ type CoreService struct {
 	CoreServiceConf
 	CoreServiceBundle
 
-	lock sync.RWMutex
-	ports map[string]Port
+	ports sync.Map
 }
 
 type ServiceBundle interface {
@@ -39,31 +38,24 @@ type CoreServiceBundle struct {
 
 func (self *CoreService) Start() {
 	self.evtHandler.Init()
-	self.lock.RLock()
-	for _, port := range self.ports {
-		port.Start()
-	}
-	self.lock.RUnlock()
+	self.ports.Range(func(_, value interface{}) bool {
+		value.(Port).Start()
+		return true
+	})
 }
 
 func (self *CoreService) Stop() {
-	self.lock.RLock()
-	for _, port := range self.ports {
-		port.Stop()
-	}
-	self.lock.RUnlock()
+	self.ports.Range(func(_, value interface{}) bool {
+		value.(Port).Stop()
+		return true
+	})
 }
 
 func (self *CoreService) addPort(port Port) bool {
-	self.lock.Lock()
-	defer self.lock.Unlock()
-	if self.ports == nil {
-		self.ports = make(map[string]Port)
-	}
-	if _, ok := self.ports[port.Name()]; ok {
+	if _, ok := self.ports.Load(port.Name()); ok {
 		return false
 	}
-	self.ports[port.Name()] = port
+	self.ports.Store(port.Name(), port)
 	return true
 }
 

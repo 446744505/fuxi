@@ -23,5 +23,5 @@ func (self *ProvideeEventHandler) OnMessageBox(p core.Msg) {
 	msg := m.(core.Msg)
 	msg.SetSession(p.Session())
 	msg.SetFTId(box.UniqId)
-	self.OnRcvMessage(msg)
+	self.OnRcvMessageSync(msg)
 }
