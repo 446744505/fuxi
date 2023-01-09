@@ -5,10 +5,13 @@ import "fmt"
 type ServiceConf interface {
 	SetName(name string)
 	Name() string
+	SetPoolCapacity(capacity int)
+	PoolCapacity() int
 }
 
 type CoreServiceConf struct {
 	name string
+	poolCapacity int
 }
 
 func (self *CoreServiceConf) Name() string {
@@ -17,6 +20,14 @@ func (self *CoreServiceConf) Name() string {
 
 func (self *CoreServiceConf) SetName(name string) {
 	self.name = name
+}
+
+func (self *CoreServiceConf) PoolCapacity() int {
+	return self.poolCapacity
+}
+
+func (self *CoreServiceConf) SetPoolCapacity(capacity int) {
+	self.poolCapacity = capacity
 }
 
 type PortType = string

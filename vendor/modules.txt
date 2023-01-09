@@ -1,3 +1,6 @@
+# github.com/Jeffail/tunny v0.1.4
+## explicit; go 1.13
+github.com/Jeffail/tunny
 # github.com/coreos/go-semver v0.3.0
 ## explicit
 github.com/coreos/go-semver/semver

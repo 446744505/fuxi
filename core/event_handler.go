@@ -17,18 +17,20 @@ type CoreEventHandler struct {
 func (self *CoreEventHandler) Init() {
 }
 
-func (self *CoreEventHandler) OnSessionAdd(session Session) {
+func (self *CoreEventHandler) OnSessionAdd(_ Session) {
 }
 
-func (self *CoreEventHandler) OnSessionRemoved(session Session) {
+func (self *CoreEventHandler) OnSessionRemoved(_ Session) {
 }
 
 func (self *CoreEventHandler) OnRcvMessage(msg Msg) {
-	if handler, ok := self.msgHandlers[msg.ID()]; ok {
-		go func() {
-			handler(msg)
-		}()
-	}
+	msg.Session().
+		Port().Service().Pool().
+		Process(func() {
+			if handler, ok := self.msgHandlers[msg.ID()]; ok {
+				handler(msg)
+			}
+	})
 }
 
 func (self *CoreEventHandler) OnRcvMessageSync(msg Msg) {

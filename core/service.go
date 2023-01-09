@@ -2,6 +2,8 @@ package core
 
 import (
 	"github.com/davyxu/cellnet"
+	"github.com/Jeffail/tunny"
+	"runtime"
 	"sync"
 )
 
@@ -11,6 +13,7 @@ type Service interface {
 	Controler
 	ServiceBundle
 	Name() string
+	Pool() *tunny.Pool
 	addPort(port Port) bool
 }
 
@@ -18,6 +21,7 @@ type CoreService struct {
 	CoreServiceConf
 	CoreServiceBundle
 
+	pool *tunny.Pool
 	ports sync.Map
 }
 
@@ -37,6 +41,11 @@ type CoreServiceBundle struct {
 }
 
 func (self *CoreService) Start() {
+	if self.poolCapacity == 0 {
+		self.poolCapacity = runtime.NumCPU()
+	}
+	self.pool = tunny.NewCallback(self.poolCapacity)
+
 	self.evtHandler.Init()
 	self.ports.Range(func(_, value interface{}) bool {
 		value.(Port).Start()
@@ -44,11 +53,16 @@ func (self *CoreService) Start() {
 	})
 }
 
+func (self *CoreService) Pool() *tunny.Pool {
+	return self.pool
+}
+
 func (self *CoreService) Stop() {
 	self.ports.Range(func(_, value interface{}) bool {
 		value.(Port).Stop()
 		return true
 	})
+	self.pool.Close()
 }
 
 func (self *CoreService) addPort(port Port) bool {

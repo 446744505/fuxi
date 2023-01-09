@@ -24,6 +24,7 @@ func NewGs() *gs {
 	pvid, _ := strconv.Atoi(core.Args.Get("pvid"))
 	GS.Pvid = int32(pvid)
 	p := providee.NewProvidee(GS.Pvid, core.ServerGs)
+	p.SetPoolCapacity(100)
 	p.SetEventHandler(&gsEventHandler{})
 	p.SetOnProvideeUpdate(OnProvideeUpdate)
 	GS.AddService(p)

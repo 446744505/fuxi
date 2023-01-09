@@ -3,6 +3,7 @@ module fuxi
 go 1.17
 
 require (
+	github.com/Jeffail/tunny v0.1.4
 	github.com/davyxu/cellnet v4.1.0+incompatible
 	github.com/davyxu/golog v0.1.0
 	github.com/davyxu/protoplus v0.1.0
