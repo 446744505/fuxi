@@ -24,4 +24,5 @@ func main() {
 	internal.Log.Infof("map server started")
 	m.Wait()
 	core.StopEtcd()
+	internal.Log.Infof("map server stoped")
 }

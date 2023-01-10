@@ -7,6 +7,7 @@ import (
 	"github.com/davyxu/cellnet/proc"
 	_ "github.com/davyxu/cellnet/proc/tcp"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -24,17 +25,18 @@ type Port interface {
 type CorePort struct {
 	CorePortConf
 	service Service
-	peer  cellnet.Peer
+	peer atomic.Value
 
 	sessions sync.Map
 }
 
 func (self *CorePort) Start() {
-	self.peer = peer.NewGenericPeer(self.typ, "", self.HostPortString(), nil)
+	peer := peer.NewGenericPeer(self.typ, "", self.HostPortString(), nil)
+	self.peer.Store(peer)
 	evtHandler := self.Service().EventHandler()
 	creater := self.Service().SessionCreater()
 	dipHandler := self.Service().DispatchHandler()
-	proc.BindProcessorHandler(self.peer, "fxtcp.ltv", func(ev cellnet.Event) {
+	proc.BindProcessorHandler(peer, "fxtcp.ltv", func(ev cellnet.Event) {
 		switch msg := ev.Message().(type) {
 		case *cellnet.SessionAccepted, *cellnet.SessionConnected:
 			session := creater(ev.Session())
@@ -60,13 +62,13 @@ func (self *CorePort) Start() {
 		}
 	})
 
-	if reconnector, ok := self.peer.(interface{
+	if reconnector, ok := peer.(interface{
 		SetReconnectDuration(time.Duration)
 	}); ok {
 		reconnector.SetReconnectDuration(5 * time.Second)
 	}
 
-	self.peer.Start()
+	peer.Start()
 }
 
 func (self *CorePort) AddSession(id int64, session Session) {
@@ -89,7 +91,7 @@ func (self *CorePort) Name() string {
 }
 
 func (self *CorePort) Stop() {
-	self.peer.Stop()
+	self.Peer().Stop()
 }
 
 func (self *CorePort) SetService(service Service) {
@@ -101,5 +103,5 @@ func (self *CorePort) Service() Service {
 }
 
 func (self *CorePort) Peer() cellnet.Peer {
-	return self.peer
+	return self.peer.Load().(cellnet.Peer)
 }

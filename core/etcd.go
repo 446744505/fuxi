@@ -264,7 +264,6 @@ func (self *etcd) doRevokeLease() error {
 func (self *etcd) clean() {
 	close(self.kvChan)
 	close(self.nodesChan)
-	close(self.closeSig)
 	self.kvs = nil
 	self.nodes = sync.Map{}
 }

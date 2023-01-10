@@ -24,5 +24,6 @@ func main() {
 	internal.Log.Infof("robot client started")
 	r.Wait()
 	core.StopEtcd()
+	internal.Log.Infof("robot client stoped")
 }
 

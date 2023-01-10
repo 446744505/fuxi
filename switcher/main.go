@@ -27,8 +27,10 @@ func main()  {
 	s.AddService(provider.NewProvider())
 	s.AddService(linker.NewLinker())
 	s.Start()
+	core.Log.Infof("switcher server started")
 	s.Wait()
 	core.StopEtcd()
+	core.Log.Infof("switcher server stoped")
 }
 
 type switcher struct {

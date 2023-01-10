@@ -24,4 +24,5 @@ func main() {
 	internal.Log.Infof("game server started")
 	g.Wait()
 	core.StopEtcd()
+	internal.Log.Infof("game server stoped")
 }
