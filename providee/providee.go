@@ -87,6 +87,7 @@ func (self *providee) SetOnProvideeUpdate(cb OnProvideeUpdate) {
 func (self *providee) SendToProvidee(pvid int32, msg core.Msg) bool {
 	msg.SetToType(core.MsgToProvidee)
 	msg.SetFTId(int64(pvid))
+	//TODO 考虑发送顺序，往同一个provider发送
 	p := self.getOneProvider(pvid)
 	if p == nil {
 		core.Log.Errorf("provider %v can not used", pvid)

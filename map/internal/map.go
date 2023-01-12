@@ -37,6 +37,7 @@ func (self *mmap) OnRoleEnter(enter *msg.GEnterMap) {
 
 func (self *mmap) OnRoleExit(roleId int64) {
 	if role := self.GetRole(roleId); role != nil {
+		self.roles.Delete(roleId)
 		role.OnExitMap()
 	}
 }

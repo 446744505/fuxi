@@ -18,11 +18,11 @@ func GetRole(p core.Msg) *Role {
 func (self *robotEventHandler) OnSEnterGame(p core.Msg) {
 	enter := p.(*msg.SEnterGame)
 	role := GetRole(p)
-	role.EnterGame(enter)
+	role.OnEnterGame(enter)
 }
 
 func (self *robotEventHandler) OnSEnterMap(p core.Msg) {
 	enter := p.(*msg.SEnterMap)
 	role := GetRole(p)
-	role.EnterMap(enter)
+	role.OnEnterMap(enter)
 }

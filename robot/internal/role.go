@@ -101,13 +101,13 @@ func (self *Role) SendToMap(msg core.Msg) bool {
 	return self.Send(msg)
 }
 
-func (self *Role) EnterGame(enter *msg.SEnterGame) {
+func (self *Role) OnEnterGame(enter *msg.SEnterGame) {
 	self.name = enter.Name
 	Log.Infof("role %s enter gs", enter.Name)
 	self.SendToGs(&msg.CGetInfo{})
 }
 
-func (self *Role) EnterMap(enter *msg.SEnterMap) {
+func (self *Role) OnEnterMap(enter *msg.SEnterMap) {
 	self.mapPvid = enter.Pvid
 	Log.Infof("role %s enter map %v", self.name, enter.Pvid)
 	self.SendToMap(&msg.CGetInfo{})
