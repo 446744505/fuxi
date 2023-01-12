@@ -7,6 +7,13 @@ import (
 
 var Args *args
 
+const (
+	ArgPPort    = "pport"
+	ArgPvid     = "pvid"
+	ArgEtcd     = "etcd"
+	ArgLogLevel = "log_level"
+)
+
 type args struct {
 	app *cli.App
 	ctx *cli.Context
@@ -36,6 +43,10 @@ func (self *args) Flag(name, value, usage string) *args {
 
 func (self *args) Get(key string) string {
 	return self.ctx.String(key)
+}
+
+func (self *args) GetInt(key string) int {
+	return self.ctx.Int(key)
 }
 
 func (self *args) Run() error {

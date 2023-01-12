@@ -21,16 +21,16 @@ build_robot:
 build_all: build_switcher build_gs build_map build_robot
 
 run_switcher:
-	./bin/switcher
+	./bin/switcher --pport 10001
 
 run_gs:
-	./bin/gs --pvid 1
+	./bin/gs --pvid 1 --pport 10002
 
 run_map:
-	./bin/map --pvid 2
+	./bin/map --pvid 2 --pport 10003
 
 run_robot:
-	./bin/robot
+	./bin/robot --pport 10004
 
 stop_switcher:
 	-ps aux | grep "[b]in/switcher" | awk '{print $$2}' | xargs kill -15
@@ -109,6 +109,9 @@ stop_docker_robot:
 	docker ps -a -q --filter "name=robot" -q | xargs docker stop
 
 stop_docker_all: stop_docker_robot stop_docker_map stop_docker_gs stop_docker_switcher
+
+img_clean:
+	docker images -a | grep none | awk '{ print $3; }' | xargs docker rmi
 
 fmt:
 	gofmt -s -w ${GOFILES}

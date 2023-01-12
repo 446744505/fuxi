@@ -5,7 +5,6 @@ import (
 	"fuxi/msg"
 	"fuxi/providee"
 	"github.com/davyxu/golog"
-	"strconv"
 	"sync"
 )
 
@@ -15,15 +14,16 @@ var Log = golog.New("gs")
 type gs struct {
 	core.NetControlImpl
 
-	Pvid  int32
+	pvid  int32
 	roles sync.Map
 }
 
 func NewGs() *gs {
 	GS = &gs{}
-	pvid, _ := strconv.Atoi(core.Args.Get("pvid"))
-	GS.Pvid = int32(pvid)
-	p := providee.NewProvidee(GS.Pvid, core.ServerGs)
+	pvid := core.Args.GetInt(core.ArgPvid)
+	GS.pvid = int32(pvid)
+	GS.SetPProfPort(core.Args.GetInt(core.ArgPPort))
+	p := providee.NewProvidee(GS.pvid, core.ServerGs)
 	p.SetPoolCapacity(100)
 	p.SetEventHandler(&gsEventHandler{})
 	p.SetOnProvideeUpdate(OnProvideeUpdate)

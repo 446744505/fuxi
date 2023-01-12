@@ -5,7 +5,6 @@ import (
 	"fuxi/core"
 	"github.com/davyxu/golog"
 	"math/rand"
-	"strconv"
 	"sync"
 )
 
@@ -31,7 +30,7 @@ func NewRobot() *robot {
 	Robot.AddService(&Robot.service)
 	Robot.service.SetEventHandler(&robotEventHandler{})
 
-	robotNum, _ := strconv.Atoi(core.Args.Get("num"))
+	robotNum := core.Args.GetInt("num")
 
 	for i := 1; i <= robotNum; i++ {
 		NewRole(int64(i)).Start()

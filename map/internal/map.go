@@ -5,7 +5,6 @@ import (
 	"fuxi/msg"
 	"fuxi/providee"
 	"github.com/davyxu/golog"
-	"strconv"
 	"sync"
 )
 
@@ -15,14 +14,15 @@ var Log = golog.New("map")
 type mmap struct {
 	core.NetControlImpl
 
-	Pvid  int32
+	pvid  int32
 	roles sync.Map
 }
 
 func NewMap() *mmap {
 	Map = &mmap{}
-	pvid, _ := strconv.Atoi(core.Args.Get("pvid"))
-	Map.Pvid = int32(pvid)
+	pvid := core.Args.GetInt(core.ArgPvid)
+	Map.pvid = int32(pvid)
+	Map.SetPProfPort(core.Args.GetInt(core.ArgPPort))
 	p := providee.NewProvidee(int32(pvid), core.ServerMap)
 	p.SetEventHandler(&mapEventHandler{})
 	Map.AddService(p)

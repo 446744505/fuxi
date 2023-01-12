@@ -1,25 +1,26 @@
 package core
 
 import (
+	"fmt"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/proc"
 	"github.com/davyxu/cellnet/proc/tcp"
 	"github.com/davyxu/golog"
+	"net/http"
+	_ "net/http/pprof"
 )
 
 var Log = golog.New("net")
 
-type Net interface {
-	Controler
-	AddService(service Service)
-	GetService(name string) Service
-}
-
 type CoreNet struct {
-	services map[string]Service
+	pprofPort int
+	services  map[string]Service
 }
 
 func (self *CoreNet) Start() {
+	if self.pprofPort > 0 {
+		go http.ListenAndServe(fmt.Sprintf("0.0.0.0:%d", self.pprofPort), nil)
+	}
 	for _, service := range self.services {
 		service.Start()
 	}
@@ -29,6 +30,10 @@ func (self *CoreNet) Stop() {
 	for _, service := range self.services {
 		service.Stop()
 	}
+}
+
+func (self *CoreNet) SetPProfPort(port int) {
+	self.pprofPort = port
 }
 
 func (self *CoreNet) AddService(service Service) {

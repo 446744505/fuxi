@@ -34,7 +34,7 @@ func (self *Role) enterMap() {
 	enter := &msg.GEnterMap{}
 	enter.RoleId = self.RoleId
 	enter.ClientSid = self.ClientSid
-	enter.GsPvid = GS.Pvid
+	enter.GsPvid = GS.pvid
 	enter.ProviderName = self.Provider.Port().HostPortString()
 	if ok := self.SendToSelfMap(enter); !ok {
 		Log.Errorf("role %v enter map failed", self.RoleId)

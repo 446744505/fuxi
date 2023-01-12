@@ -12,7 +12,7 @@ type Role struct {
 func (self *Role) OnEnterMap(enter *msg.GEnterMap) {
 	self.GEnterMap = enter
 	Log.Infof("role %v enter map", enter.RoleId)
-	if ok := self.Send(&msg.SEnterMap{Pvid: Map.Pvid}); !ok {
+	if ok := self.Send(&msg.SEnterMap{Pvid: Map.pvid}); !ok {
 		Log.Errorf("role %v map notify client failed", enter.RoleId)
 	}
 }
