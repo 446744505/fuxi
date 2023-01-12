@@ -7,9 +7,9 @@ import (
 
 type GEnterMap struct {
 	core.CoreMsg `binary:"-"`
-	RoleId int64
-	ClientSid int64
-	GsPvid int32
+	RoleId       int64
+	ClientSid    int64
+	GsPvid       int32
 	ProviderName string
 }
 
@@ -50,8 +50,8 @@ func (self *GEnterMap) Size() (ret int) {
 
 type LEnterGame struct {
 	core.CoreMsg `binary:"-"`
-	RoleId int64
-	ClientSid int64
+	RoleId       int64
+	ClientSid    int64
 }
 
 func (self *LEnterGame) ID() int32 {
@@ -121,7 +121,7 @@ func (self *MessageBox) Size() (ret int) {
 
 type ClientBroken struct {
 	core.CoreMsg `binary:"-"`
-	ClientSid       int64
+	ClientSid    int64
 }
 
 func (self *ClientBroken) ID() int32 {
@@ -149,7 +149,7 @@ func (self *ClientBroken) Size() (ret int) {
 
 type GExitMap struct {
 	core.CoreMsg `binary:"-"`
-	RoleId int64
+	RoleId       int64
 }
 
 func (self *GExitMap) ID() int32 {

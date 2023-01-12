@@ -9,6 +9,7 @@ import (
 )
 
 var Providee *providee
+
 type OnProvideeUpdate func(isRemove bool, meta *core.ProvideeMeta)
 type OnClientBroken func(clientSid int64)
 
@@ -19,11 +20,10 @@ type providee struct {
 	OnClientBroken
 
 	onProvideeUpdate OnProvideeUpdate
-	providerMap sync.Map
+	providerMap      sync.Map
 }
 
 type provideeWatcher struct {
-
 }
 
 func NewProvidee(pvid int32, name string) *providee {
@@ -75,8 +75,8 @@ func (self *providee) SetOnProvideeUpdate(cb OnProvideeUpdate) {
 		provider.ForProvidees(func(pvid int32, name string) {
 			meta := &core.ProvideeMeta{
 				ProviderUrl: providerUrl,
-				NodeName: name,
-				Pvid: pvid,
+				NodeName:    name,
+				Pvid:        pvid,
 			}
 			cb(false, meta)
 		})

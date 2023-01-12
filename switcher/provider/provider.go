@@ -32,8 +32,8 @@ func NewProvider() *provider {
 	var port, _ = strconv.Atoi(arr[1])
 	if core.ServiceAddPort(Provider, core.NewAcceptor("provider", host, port)) {
 		meta := &core.SwitcherMeta{
-			NodeName: core.NodeNameProvider,
-			LinkerUrl: core.Args.Get("linker"),
+			NodeName:    core.NodeNameProvider,
+			LinkerUrl:   core.Args.Get("linker"),
 			ProviderUrl: url,
 		}
 		core.ETCD.Put(meta.Path(), url)
@@ -52,9 +52,9 @@ func (self *provider) BindProvidee(pvid int32, name string, session core.Session
 
 	url := session.Port().HostPortString()
 	meta := &core.ProvideeMeta{
-		NodeName: core.NodeNameProvidee,
+		NodeName:    core.NodeNameProvidee,
 		ProviderUrl: url,
-		Pvid: pvid,
+		Pvid:        pvid,
 	}
 	core.ETCD.Put(meta.Path(), name)
 }
@@ -108,7 +108,7 @@ func init() {
 		}
 
 		to := &msg.MessageBox{
-			MsgId: int32(dispatch.MsgId),
+			MsgId:   int32(dispatch.MsgId),
 			MsgData: dispatch.MsgData,
 		}
 		session := dispatch.Session()
@@ -129,12 +129,12 @@ func init() {
 		}
 
 		to := &msg.MessageBox{
-			MsgId: int32(dispatch.MsgId),
+			MsgId:   int32(dispatch.MsgId),
 			MsgData: dispatch.MsgData,
 		}
 		session := dispatch.Session()
 		info, _ := session.GetContext(util.CtxTypeSessionInfo)
-		if provideeInfo, ok := info.(*util.ProvideeSessionInfo); ok{
+		if provideeInfo, ok := info.(*util.ProvideeSessionInfo); ok {
 			to.UniqId = int64(provideeInfo.Pvid)
 		}
 		prov.Send(to)
@@ -148,7 +148,7 @@ func init() {
 		}
 		prov.Send(msg)
 	}
-	
+
 	util.ClientBroken = func(clientSid int64) {
 		Provider.providees.Range(func(_, value interface{}) bool {
 			session := value.(core.Session)

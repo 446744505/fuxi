@@ -11,8 +11,8 @@ type MsgToType int16
 
 const (
 	MsgToProvidee MsgToType = 1 //服务器之间
-	MsgToClient MsgToType = 2 //服务器到客户端
-	MsgToServer MsgToType = 3 //客户端到服务器
+	MsgToClient   MsgToType = 2 //服务器到客户端
+	MsgToServer   MsgToType = 3 //客户端到服务器
 )
 
 type MsgHead interface {
@@ -88,7 +88,7 @@ func NewDispatch(msgToType MsgToType, msgToId int64, msgId int, msgData []byte) 
 
 type Dispatch struct {
 	CoreMsg `binary:"-"`
-	MsgId int
+	MsgId   int
 	MsgData []byte
 }
 

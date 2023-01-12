@@ -28,4 +28,3 @@ func (self *Role) Send(msg core.Msg) bool {
 func (self *Role) SendToGs(msg core.Msg) bool {
 	return Map.SendToProvidee(self.GsPvid, msg)
 }
-

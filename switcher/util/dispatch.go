@@ -8,8 +8,8 @@ type ClientBrokenFunc func(clientSid int64)
 
 var (
 	DispatchToClient   DispatchToFunc
-	ClientToProvidee DispatchToFunc
+	ClientToProvidee   DispatchToFunc
 	ProvideeToProvidee DispatchToFunc
 	SendToProvidee     SendToProvideeFunc
-	ClientBroken ClientBrokenFunc
+	ClientBroken       ClientBrokenFunc
 )

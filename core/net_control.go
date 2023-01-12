@@ -51,7 +51,7 @@ func (self *NetControlImpl) Stop() {
 func (self *NetControlImpl) Wait() {
 	self.signal = make(chan os.Signal)
 	signal.Notify(self.signal, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
-	<- self.signal
+	<-self.signal
 	close(self.signal)
 	self.Stop()
 }

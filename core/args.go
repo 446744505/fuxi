@@ -15,7 +15,7 @@ type args struct {
 func CreateArgs(name, usage string) *args {
 	Args = &args{}
 	Args.app = &cli.App{
-		Name: name,
+		Name:  name,
 		Usage: usage,
 		Action: func(context *cli.Context) error {
 			Args.ctx = context
@@ -27,7 +27,7 @@ func CreateArgs(name, usage string) *args {
 
 func (self *args) Flag(name, value, usage string) *args {
 	self.app.Flags = append(self.app.Flags, &cli.StringFlag{
-		Name: name,
+		Name:  name,
 		Value: value,
 		Usage: usage,
 	})

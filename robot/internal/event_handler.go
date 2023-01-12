@@ -30,5 +30,3 @@ func (self *robotEventHandler) OnSessionRemoved(session core.Session) {
 		role.(*Role).OnRemoveSession(session)
 	}
 }
-
-

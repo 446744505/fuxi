@@ -22,7 +22,7 @@ type Session interface {
 }
 
 type CoreSession struct {
-	raw cellnet.Session
+	raw  cellnet.Session
 	port Port
 
 	ctx sync.Map
@@ -43,7 +43,6 @@ func (self *CoreSession) GetContext(key string) (val interface{}, ok bool) {
 	return
 }
 
-
 func (self *CoreSession) Send(msg Msg) {
 	self.raw.Send(msg)
 }
@@ -51,7 +50,7 @@ func (self *CoreSession) Send(msg Msg) {
 func (self *CoreSession) SendRaw(msgId int, msgData []byte) {
 	self.raw.Send(&cellnet.RawPacket{
 		MsgData: msgData,
-		MsgID: msgId,
+		MsgID:   msgId,
 	})
 }
 

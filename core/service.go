@@ -1,8 +1,8 @@
 package core
 
 import (
-	"github.com/davyxu/cellnet"
 	"github.com/Jeffail/tunny"
+	"github.com/davyxu/cellnet"
 	"runtime"
 	"sync"
 )
@@ -21,7 +21,7 @@ type CoreService struct {
 	CoreServiceConf
 	CoreServiceBundle
 
-	pool *tunny.Pool
+	pool  *tunny.Pool
 	ports sync.Map
 }
 

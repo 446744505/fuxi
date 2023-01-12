@@ -26,7 +26,7 @@ type Port interface {
 type CorePort struct {
 	CorePortConf
 	service Service
-	peer atomic.Value
+	peer    atomic.Value
 
 	sessions sync.Map
 }
@@ -85,7 +85,7 @@ func (self *CorePort) Start() {
 		}
 	})
 
-	if reconnector, ok := peer.(interface{
+	if reconnector, ok := peer.(interface {
 		SetReconnectDuration(time.Duration)
 	}); ok {
 		reconnector.SetReconnectDuration(5 * time.Second)

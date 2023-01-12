@@ -10,12 +10,12 @@ import (
 
 type Role struct {
 	roleId int64
-	name string
+	name   string
 
-	gsPvid int32
+	gsPvid  int32
 	mapPvid int32
 
-	linker atomic.Value
+	linker  atomic.Value
 	session core.Session
 }
 
@@ -29,7 +29,7 @@ func (self *Role) Start() {
 		defer ticker.Stop()
 		for {
 			select {
-			case <- ticker.C:
+			case <-ticker.C:
 				self.tryEnterGame()
 			}
 		}

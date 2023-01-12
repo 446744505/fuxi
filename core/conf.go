@@ -10,7 +10,7 @@ type ServiceConf interface {
 }
 
 type CoreServiceConf struct {
-	name string
+	name         string
 	poolCapacity int
 }
 
@@ -33,12 +33,12 @@ func (self *CoreServiceConf) SetPoolCapacity(capacity int) {
 type PortType = string
 
 const (
-	TypeAcceptor PortType = "tcp.Acceptor"
+	TypeAcceptor  PortType = "tcp.Acceptor"
 	TypeConnector PortType = "tcp.Connector"
 )
 
 type CorePortConf struct {
-	typ PortType
+	typ  PortType
 	name string
 	host string
 	port int

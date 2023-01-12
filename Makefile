@@ -2,6 +2,10 @@ GO_BUILD_FLAGS=-mod vendor -trimpath
 GO_BUILD_DBG_FLAGS = $(GO_BUILD_FLAGS) -gcflags "-N -l" -race
 HOST=172.20.170.217
 
+PACKAGES=`go list ./... | grep -v /vendor/`
+VETPACKAGES=`go list ./... | grep -v /vendor/ | grep -v /examples/`
+GOFILES=`find . -name "*.go" -type f -not -path "./vendor/*"`
+
 build_switcher:
 	go build $(GO_BUILD_DBG_FLAGS) -o ./bin/switcher fuxi/switcher
 
@@ -105,3 +109,9 @@ stop_docker_robot:
 	docker ps -a -q --filter "name=robot" -q | xargs docker stop
 
 stop_docker_all: stop_docker_robot stop_docker_map stop_docker_gs stop_docker_switcher
+
+fmt:
+	gofmt -s -w ${GOFILES}
+
+vet:
+	go vet ${VETPACKAGES}

@@ -15,7 +15,7 @@ var Log = golog.New("gs")
 type gs struct {
 	core.NetControlImpl
 
-	Pvid int32
+	Pvid  int32
 	roles sync.Map
 }
 

@@ -21,7 +21,7 @@ func (self *linkerEventHandler) OnCEnterGame(p core.Msg) {
 	linkerInfo.RoleId = center.RoleId
 
 	lenter := &msg.LEnterGame{
-		RoleId: center.RoleId,
+		RoleId:    center.RoleId,
 		ClientSid: p.Session().ID(),
 	}
 	Log.Debugf("role %v enter", center.RoleId)

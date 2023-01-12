@@ -17,7 +17,7 @@ type mapMgr struct {
 
 func (self *mapMgr) RandomMap() int32 {
 	var maps []int32
-	for pvid, _ := range self.maps {
+	for pvid := range self.maps {
 		maps = append(maps, pvid)
 	}
 	if len(maps) == 0 {

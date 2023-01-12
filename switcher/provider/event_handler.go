@@ -24,4 +24,3 @@ func (self *providerEventHandler) OnSessionAdd(session core.Session) {
 func (self *providerEventHandler) OnSessionRemoved(session core.Session) {
 	Provider.RemoveSession(session)
 }
-

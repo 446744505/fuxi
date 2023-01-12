@@ -7,8 +7,8 @@ import (
 
 type BindPvid struct {
 	core.CoreMsg `binary:"-"`
-	PVID int32
-	Name string
+	PVID         int32
+	Name         string
 }
 
 func (self BindPvid) ID() int32 {
@@ -40,7 +40,7 @@ func (self *BindPvid) Size() (ret int) {
 
 type UnBindPvid struct {
 	core.CoreMsg `binary:"-"`
-	PVID int32
+	PVID         int32
 }
 
 func (self UnBindPvid) ID() int32 {

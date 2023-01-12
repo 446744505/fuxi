@@ -7,8 +7,8 @@ import (
 
 type CEnterGame struct {
 	core.CoreMsg `binary:"-"`
-	RoleId int64
-	PVID int32
+	RoleId       int64
+	PVID         int32
 }
 
 func (self *CEnterGame) ID() int32 {
@@ -40,7 +40,7 @@ func (self *CEnterGame) Size() (ret int) {
 
 type SEnterGame struct {
 	core.CoreMsg `binary:"-"`
-	Name string
+	Name         string
 }
 
 func (self *SEnterGame) ID() int32 {

@@ -10,7 +10,6 @@ func (self *gsEventHandler) OnLEnterGame(p core.Msg) {
 	GS.OnRoleEnter(enter)
 }
 
-
 func (self *gsEventHandler) OnCGetInfo(p core.Msg) {
 	Log.Infof("gs received role %v cgetinfo", p.FTId())
 }

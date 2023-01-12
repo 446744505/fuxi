@@ -1,6 +1,6 @@
 package core
 
 const (
-	ServerGs = "gs"
+	ServerGs  = "gs"
 	ServerMap = "map"
 )

@@ -30,8 +30,8 @@ func NewLinker() *linker {
 	var port, _ = strconv.Atoi(arr[1])
 	if core.ServiceAddPort(Linker, core.NewAcceptor("linker", host, port)) {
 		meta := &core.SwitcherMeta{
-			NodeName: core.NodeNameLinker,
-			LinkerUrl: url,
+			NodeName:    core.NodeNameLinker,
+			LinkerUrl:   url,
 			ProviderUrl: core.Args.Get("provider"),
 		}
 		core.ETCD.Put(meta.Path(), url)

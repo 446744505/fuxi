@@ -15,7 +15,7 @@ import (
 var ETCD *etcd
 
 const (
-	NodeNameLinker = "linker"
+	NodeNameLinker   = "linker"
 	NodeNameProvider = "provider"
 	NodeNameProvidee = "providee"
 )
@@ -26,16 +26,16 @@ type OnWatcher interface {
 }
 
 type SwitcherMeta struct {
-	NodeName string
-	LinkerUrl string
+	NodeName    string
+	LinkerUrl   string
 	ProviderUrl string
 }
 
 type ProvideeMeta struct {
-	NodeName string
-	ServerName string
+	NodeName    string
+	ServerName  string
 	ProviderUrl string
-	Pvid int32
+	Pvid        int32
 }
 
 type node struct {
@@ -45,8 +45,8 @@ type node struct {
 
 type pair struct {
 	isDelete bool
-	key string
-	val interface{}
+	key      string
+	val      interface{}
 }
 
 type etcd struct {
@@ -55,15 +55,15 @@ type etcd struct {
 	closeSig chan struct{}
 
 	kvChan chan *pair
-	kvs map[string]string
+	kvs    map[string]string
 
 	nodesChan chan *pair
-	nodes sync.Map
+	nodes     sync.Map
 
 	client        *clientv3.Client
 	lease         clientv3.Lease
 	leaseResp     *clientv3.LeaseGrantResponse
-	cancelFunc     func()
+	cancelFunc    func()
 	keepAliveChan <-chan *clientv3.LeaseKeepAliveResponse
 }
 
@@ -74,11 +74,11 @@ func InitEtcd(addr []string) {
 	}
 
 	ETCD = &etcd{
-		conf: conf,
-		kvChan: make(chan *pair, 1000),
-		kvs: make(map[string]string),
+		conf:      conf,
+		kvChan:    make(chan *pair, 1000),
+		kvs:       make(map[string]string),
 		nodesChan: make(chan *pair, 1000),
-		closeSig: make(chan struct{}),
+		closeSig:  make(chan struct{}),
 	}
 	go ETCD.startWork()
 }
@@ -108,7 +108,7 @@ func (self *etcd) Delete(key string) error {
 func (self *etcd) Watch(prefix string, onWatcher OnWatcher) {
 	n := &node{
 		OnWatcher: onWatcher,
-		kvs: make(map[string]string),
+		kvs:       make(map[string]string),
 	}
 	self.nodesChan <- &pair{
 		key: prefix,
@@ -130,7 +130,7 @@ func (self *etcd) startWork() error {
 
 	for {
 		select {
-		case <- self.closeSig:
+		case <-self.closeSig:
 			self.clean()
 			if err := self.doRevokeLease(); err != nil {
 				Log.Errorf("etcd revoke lease err", err)
@@ -138,7 +138,7 @@ func (self *etcd) startWork() error {
 			if err := self.client.Close(); err != nil {
 				Log.Errorf("etcd close client err", err)
 			}
-		case p := <- self.kvChan:
+		case p := <-self.kvChan:
 			if p.isDelete {
 				delete(self.kvs, p.key)
 				if err := self.doDelete(p.key); err != nil {
@@ -150,7 +150,7 @@ func (self *etcd) startWork() error {
 					Log.Errorf("etcd put key %v val %v err", p.key, p.val, err)
 				}
 			}
-		case p := <- self.nodesChan:
+		case p := <-self.nodesChan:
 			self.nodes.Store(p.key, p.val.(*node))
 			go self.doWatcher(p.key)
 		case rsp := <-self.keepAliveChan:
@@ -231,7 +231,7 @@ func (self *etcd) doWatcher(prefix string) error {
 		for _, ev := range rsp.Events {
 			switch ev.Type {
 			case mvccpb.PUT:
-				self.putNode(prefix, string(ev.Kv.Key),string(ev.Kv.Value))
+				self.putNode(prefix, string(ev.Kv.Key), string(ev.Kv.Value))
 			case mvccpb.DELETE:
 				self.deleteNode(prefix, string(ev.Kv.Key))
 			}

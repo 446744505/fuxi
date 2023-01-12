@@ -30,7 +30,7 @@ func (self *CoreEventHandler) OnRcvMessage(msg Msg) {
 			if handler, ok := self.msgHandlers[msg.ID()]; ok {
 				handler(msg)
 			}
-	})
+		})
 }
 
 func (self *CoreEventHandler) OnRcvMessageSync(msg Msg) {

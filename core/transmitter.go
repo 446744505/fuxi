@@ -7,7 +7,6 @@ import (
 )
 
 type CoreMessageTransmitter struct {
-
 }
 
 type socketOpt interface {
@@ -62,4 +61,3 @@ func (self CoreMessageTransmitter) OnSendMessage(ses cellnet.Session, msg interf
 
 	return
 }
-

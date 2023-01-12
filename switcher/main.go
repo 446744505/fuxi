@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func main()  {
+func main() {
 	args := core.CreateArgs("Switcher", "the fuxi switcher")
 	args.Flag("etcd", "127.0.0.1:2379", "the etcd url")
 	args.Flag("linker", "127.0.0.1:8080", "the linker url")

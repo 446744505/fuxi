@@ -17,11 +17,11 @@ var (
 )
 
 const (
-	bodySize  = 2 // 包体大小字段
+	bodySize      = 2 // 包体大小字段
 	msgToTypeSize = 2
-	msgToIDSize = 8
-	msgIDSize = 2 // 消息ID字段
-	msgInfoSize = msgToTypeSize + msgToIDSize + msgIDSize
+	msgToIDSize   = 8
+	msgIDSize     = 2 // 消息ID字段
+	msgInfoSize   = msgToTypeSize + msgToIDSize + msgIDSize
 )
 
 // 接收Length-Type-Value格式的封包流程
@@ -68,7 +68,7 @@ func RecvLTVPacket(reader io.Reader, maxPacketSize int) (msg interface{}, err er
 
 	msgToId := binary.LittleEndian.Uint64(body[msgToTypeSize:])
 
-	msgid := binary.LittleEndian.Uint16(body[msgToTypeSize + msgToIDSize:])
+	msgid := binary.LittleEndian.Uint16(body[msgToTypeSize+msgToIDSize:])
 
 	msgData := body[msgInfoSize:]
 
@@ -94,11 +94,11 @@ func RecvLTVPacket(reader io.Reader, maxPacketSize int) (msg interface{}, err er
 func SendLTVPacket(writer io.Writer, ctx cellnet.ContextSet, data interface{}) error {
 
 	var (
-		msgData []byte
-		msgID   int
-		meta    *cellnet.MessageMeta
+		msgData   []byte
+		msgID     int
+		meta      *cellnet.MessageMeta
 		msgToType int16
-		msgToId int64
+		msgToId   int64
 	)
 
 	switch m := data.(type) {
@@ -132,10 +132,10 @@ func SendLTVPacket(writer io.Writer, ctx cellnet.ContextSet, data interface{}) e
 	binary.LittleEndian.PutUint16(pkt[bodySize:], uint16(msgToType))
 
 	//to id
-	binary.LittleEndian.PutUint64(pkt[bodySize + msgToTypeSize:], uint64(msgToId))
+	binary.LittleEndian.PutUint64(pkt[bodySize+msgToTypeSize:], uint64(msgToId))
 
 	// Type
-	binary.LittleEndian.PutUint16(pkt[bodySize + msgToTypeSize + msgToIDSize:], uint16(msgID))
+	binary.LittleEndian.PutUint16(pkt[bodySize+msgToTypeSize+msgToIDSize:], uint16(msgID))
 
 	// Value
 	copy(pkt[bodySize+msgInfoSize:], msgData)

@@ -29,4 +29,3 @@ func main() {
 	core.StopEtcd()
 	internal.Log.Infof("robot client stoped")
 }
-
