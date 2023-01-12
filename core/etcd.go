@@ -124,7 +124,7 @@ func (self *etcd) startWork() error {
 	}
 
 	if err := self.setLease(5); err != nil {
-		Log.Errorf("etcd start setLease err", err)
+		Log.Errorf("etcd start setLease err %v", err)
 		return err
 	}
 
@@ -133,21 +133,22 @@ func (self *etcd) startWork() error {
 		case <-self.closeSig:
 			self.clean()
 			if err := self.doRevokeLease(); err != nil {
-				Log.Errorf("etcd revoke lease err", err)
+				Log.Errorf("etcd revoke lease err %v", err)
 			}
 			if err := self.client.Close(); err != nil {
-				Log.Errorf("etcd close client err", err)
+				Log.Errorf("etcd close client err %v", err)
 			}
+			return nil
 		case p := <-self.kvChan:
 			if p.isDelete {
 				delete(self.kvs, p.key)
 				if err := self.doDelete(p.key); err != nil {
-					Log.Errorf("etcd delete key %v err", p.key, err)
+					Log.Errorf("etcd delete key %v err %v", p.key, err)
 				}
 			} else {
 				self.kvs[p.key] = fmt.Sprint(p.val)
 				if err := self.doPut(p.key, fmt.Sprint(p.val)); err != nil {
-					Log.Errorf("etcd put key %v val %v err", p.key, p.val, err)
+					Log.Errorf("etcd put key %v val %v err %v", p.key, p.val, err)
 				}
 			}
 		case p := <-self.nodesChan:
@@ -157,8 +158,11 @@ func (self *etcd) startWork() error {
 			if rsp == nil {
 				Log.Infoln("etcd server closed")
 				self.leaseResp = nil
+				if self.cancelFunc != nil {
+					self.cancelFunc()
+				}
 				if err := self.setLease(5); err != nil {
-					Log.Errorf("etcd reconnect setLease err", err)
+					Log.Errorf("etcd reconnect setLease err %v", err)
 					continue
 				}
 				for k, v := range self.kvs {
@@ -167,8 +171,6 @@ func (self *etcd) startWork() error {
 			}
 		}
 	}
-
-	return nil
 }
 
 //设置租约
@@ -185,6 +187,7 @@ func (self *etcd) setLease(timeNum int64) error {
 	ctx, cancelFunc := context.WithCancel(context.TODO())
 	leaseRespChan, err := lease.KeepAlive(ctx, leaseResp.ID)
 	if err != nil {
+		cancelFunc()
 		return err
 	}
 
@@ -217,7 +220,7 @@ func (self *etcd) doDelete(key string) error {
 func (self *etcd) doWatcher(prefix string) error {
 	rsp, err := self.client.Get(context.Background(), prefix, clientv3.WithPrefix())
 	if err != nil {
-		Log.Errorf("etcd watcher prefix %v err", prefix, err)
+		Log.Errorf("etcd watcher prefix %v err %v", prefix, err)
 		return err
 	}
 	if rsp != nil && rsp.Kvs != nil {

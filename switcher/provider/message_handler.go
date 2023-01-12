@@ -12,7 +12,7 @@ func OnDispatch(p *core.Dispatch) {
 	} else if p.ToType() == core.MsgToClient {
 		util.DispatchToClient(p)
 	} else {
-		Log.Errorln("err dispatch msg, toType: %d msgId: %d", p.ToType(), p.MsgId)
+		Log.Errorf("err dispatch msg, toType: %d msgId: %d", p.ToType(), p.MsgId)
 	}
 }
 
