@@ -4,7 +4,7 @@ import (
 	"fuxi/core"
 	"fuxi/msg"
 	"github.com/davyxu/cellnet"
-	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -15,8 +15,7 @@ type Role struct {
 	gsPvid int32
 	mapPvid int32
 
-	linkerLock sync.RWMutex
-	linker *Linker
+	linker atomic.Value
 	session core.Session
 }
 
@@ -41,9 +40,8 @@ func (self *Role) OnAddSession(session core.Session) {
 	self.session = session
 	Log.Debugf("role %v connect success", self.roleId)
 
-	self.linkerLock.RLock()
-	gsid := self.linker.RandGs()
-	self.linkerLock.RUnlock()
+	l := self.linker.Load().(*Linker)
+	gsid := l.RandGs()
 	if gsid == 0 {
 		Log.Errorf("role %v no gs can use", self.roleId)
 		return
@@ -64,9 +62,7 @@ func (self *Role) OnRemoveSession(_ core.Session) {
 }
 
 func (self *Role) tryEnterGame() {
-	self.linkerLock.Lock()
-	defer self.linkerLock.Unlock()
-	if self.linker != nil {
+	if self.linker.Load() != nil {
 		return
 	}
 	l := Robot.RandomLinker(0)
@@ -82,7 +78,7 @@ func (self *Role) tryEnterGame() {
 	Log.Debugf("role %v start connect", self.roleId)
 	ctx := port.Peer().(cellnet.ContextSet)
 	ctx.SetContext(CtxTypeRole, self)
-	self.linker = l
+	self.linker.Store(l)
 }
 
 func (self *Role) Send(msg core.Msg) bool {

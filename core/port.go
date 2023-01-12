@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/peer"
 	_ "github.com/davyxu/cellnet/peer/tcp"
@@ -31,7 +32,7 @@ type CorePort struct {
 }
 
 func (self *CorePort) Start() {
-	peer := peer.NewGenericPeer(self.typ, "", self.HostPortString(), nil)
+	peer := peer.NewGenericPeer(self.typ, self.name, fmt.Sprintf("0.0.0.0:%d", self.port), nil)
 	self.peer.Store(peer)
 	evtHandler := self.Service().EventHandler()
 	creater := self.Service().SessionCreater()

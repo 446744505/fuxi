@@ -1,5 +1,6 @@
 GO_BUILD_FLAGS=-mod vendor -trimpath
 GO_BUILD_DBG_FLAGS = $(GO_BUILD_FLAGS) -gcflags "-N -l" -race
+HOST=172.20.170.217
 
 build_switcher:
 	go build $(GO_BUILD_DBG_FLAGS) -o ./bin/switcher fuxi/switcher
@@ -13,7 +14,7 @@ build_map:
 build_robot:
 	go build $(GO_BUILD_DBG_FLAGS) -o ./bin/robot fuxi/robot
 
-build_all:build_switcher build_gs build_map build_robot
+build_all: build_switcher build_gs build_map build_robot
 
 run_switcher:
 	./bin/switcher
@@ -39,4 +40,68 @@ stop_map:
 stop_robot:
 	-ps aux | grep "[b]in/robot" | awk '{print $$2}' | xargs kill -15
 
-stop_all:stop_robot stop_map stop_gs stop_switcher
+stop_all: stop_robot stop_map stop_gs stop_switcher
+
+img_switcher:
+	docker build -f Dockerfile_switcher -t switcher .
+
+img_gs:
+	docker build --build-arg server=gs -t gs .
+
+img_map:
+	docker build --build-arg server=map -t map .
+
+img_robot:
+	docker build --build-arg server=robot -t robot .
+
+img_all: img_switcher img_gs img_map img_robot
+
+run_docker_switcher:
+	docker ps -a -q --filter "name=switcher" -q | xargs docker rm
+	docker run --name switcher \
+		-p 8080:8080 \
+		-p 8088:8088 \
+		-e linker=$(HOST):8080 \
+		-e provider=$(HOST):8088 \
+		-e etcd=$(HOST):2379 \
+		switcher
+
+run_docker_gs:
+	docker ps -a -q --filter "name=gs" -q | xargs docker rm
+	docker run --name gs \
+		-e etcd=$(HOST):2379 \
+		-e svr=gs \
+		-e args="--pvid=1" \
+		gs
+
+run_docker_map:
+	docker ps -a -q --filter "name=map" -q | xargs docker rm
+	docker run --name map \
+		-e etcd=$(HOST):2379 \
+		-e svr=map \
+		-e args="--pvid=2" \
+		map
+
+run_docker_robot:
+	docker ps -a -q --filter "name=robot" -q | xargs docker rm
+	docker run --name robot \
+		-e etcd=$(HOST):2379 \
+		-e svr=robot \
+		-e args="--num=1" \
+		robot
+
+run_docker_all: run_docker_switcher run_docker_gs run_docker_map run_docker_robot
+
+stop_docker_switcher:
+	docker ps -a -q --filter "name=switcher" -q | xargs docker stop
+
+stop_docker_gs:
+	docker ps -a -q --filter "name=gs" -q | xargs docker stop
+
+stop_docker_map:
+	docker ps -a -q --filter "name=map" -q | xargs docker stop
+
+stop_docker_robot:
+	docker ps -a -q --filter "name=robot" -q | xargs docker stop
+
+stop_docker_all: stop_docker_robot stop_docker_map stop_docker_gs stop_docker_switcher

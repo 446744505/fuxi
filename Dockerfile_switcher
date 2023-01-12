@@ -1,0 +1,14 @@
+FROM golang:1.17 as builder
+ENV CGO_ENABLED 0
+WORKDIR /go/src/fuxi
+COPY . /go/src/fuxi
+RUN go build -mod vendor -trimpath -o bin/switcher fuxi/switcher
+
+FROM alpine
+ENV etcd=""
+ENV linker=""
+ENV provider=""
+EXPOSE 8080 8088
+WORKDIR /go/src/fuxi
+COPY --from=builder /go/src/fuxi/bin/switcher ./
+ENTRYPOINT ["sh", "-c", "./switcher --linker=${linker} --provider=${provider} --etcd=${etcd}"]
