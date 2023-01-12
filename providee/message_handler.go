@@ -25,3 +25,11 @@ func (self *ProvideeEventHandler) OnMessageBox(p core.Msg) {
 	msg.SetFTId(box.UniqId)
 	self.OnRcvMessageSync(msg)
 }
+
+func (self *ProvideeEventHandler) OnClientBroken(p core.Msg) {
+	broken := p.(*msg.ClientBroken)
+	onBroken := Providee.OnClientBroken
+	if onBroken != nil {
+		onBroken(broken.ClientSid)
+	}
+}

@@ -6,7 +6,7 @@ import (
 	"fuxi/msg"
 )
 
-type NetRole struct {
+type Role struct {
 	RoleId    int64
 	ClientSid int64
 	Provider  core.Session
@@ -14,7 +14,7 @@ type NetRole struct {
 	MapPvid int32
 }
 
-func (self *NetRole) EnterGame() {
+func (self *Role) EnterGame() {
 	self.enterMap()
 
 	ack := &msg.SEnterGame{}
@@ -23,7 +23,7 @@ func (self *NetRole) EnterGame() {
 	Log.Infof("role %d enter game", self.RoleId)
 }
 
-func (self *NetRole) enterMap() {
+func (self *Role) enterMap() {
 	Log.Debugf("role %v start enter map", self.RoleId)
 	mapPvidId := MapMgr.RandomMap()
 	if mapPvidId == 0 {
@@ -41,21 +41,22 @@ func (self *NetRole) enterMap() {
 	}
 }
 
-func (self *NetRole) ExitGame() {
+func (self *Role) ExitGame() {
 	defer core.PrintPanicStack()
+	self.exitMap()
 	Log.Infof("role %d exit game", self.RoleId)
 }
 
-func (self *NetRole) exitMap() {
-
+func (self *Role) exitMap() {
+	self.SendToSelfMap(&msg.GExitMap{RoleId: self.RoleId})
 }
 
-func (self *NetRole) Send(msg core.Msg) {
+func (self *Role) Send(msg core.Msg) {
 	msg.SetToType(core.MsgToClient)
 	msg.SetFTId(self.ClientSid)
 	self.Provider.Send(msg)
 }
 
-func (self *NetRole) SendToSelfMap(msg core.Msg) bool {
+func (self *Role) SendToSelfMap(msg core.Msg) bool {
 	return GS.SendToProvidee(self.MapPvid, msg)
 }

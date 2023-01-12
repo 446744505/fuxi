@@ -23,6 +23,7 @@ func (self *mapEventHandler) OnSessionRemoved(session core.Session) {
 
 func (self *mapEventHandler) RegisterSvr() {
 	self.RegisterMsg(&msg.GEnterMap{}, self.OnGEnterMap)
+	self.RegisterMsg(&msg.GExitMap{}, self.OnGExitMap)
 }
 
 func (self *mapEventHandler) RegisterClient() {

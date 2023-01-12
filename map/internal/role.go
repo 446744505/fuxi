@@ -5,11 +5,11 @@ import (
 	"fuxi/msg"
 )
 
-type NetRole struct {
+type Role struct {
 	*msg.GEnterMap
 }
 
-func (self *NetRole) OnEnterMap(enter *msg.GEnterMap) {
+func (self *Role) OnEnterMap(enter *msg.GEnterMap) {
 	self.GEnterMap = enter
 	Log.Infof("role %v enter map", enter.RoleId)
 	if ok := self.Send(&msg.SEnterMap{Pvid: Map.Pvid}); !ok {
@@ -17,11 +17,15 @@ func (self *NetRole) OnEnterMap(enter *msg.GEnterMap) {
 	}
 }
 
-func (self *NetRole) Send(msg core.Msg) bool {
+func (self *Role) OnExitMap() {
+	Log.Infof("role %v exit map", self.RoleId)
+}
+
+func (self *Role) Send(msg core.Msg) bool {
 	return Map.SendToClient(self.ProviderName, self.ClientSid, msg)
 }
 
-func (self *NetRole) SendToGs(msg core.Msg) bool {
+func (self *Role) SendToGs(msg core.Msg) bool {
 	return Map.SendToProvidee(self.GsPvid, msg)
 }
 

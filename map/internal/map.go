@@ -2,9 +2,11 @@ package internal
 
 import (
 	"fuxi/core"
+	"fuxi/msg"
 	"fuxi/providee"
 	"github.com/davyxu/golog"
 	"strconv"
+	"sync"
 )
 
 var Map *mmap
@@ -14,6 +16,7 @@ type mmap struct {
 	core.NetControlImpl
 
 	Pvid int32
+	roles sync.Map
 }
 
 func NewMap() *mmap {
@@ -24,6 +27,25 @@ func NewMap() *mmap {
 	p.SetEventHandler(&mapEventHandler{})
 	Map.AddService(p)
 	return Map
+}
+
+func (self *mmap) OnRoleEnter(enter *msg.GEnterMap) {
+	role := &Role{}
+	self.roles.Store(enter.RoleId, role)
+	role.OnEnterMap(enter)
+}
+
+func (self *mmap) OnRoleExit(roleId int64) {
+	if role := self.GetRole(roleId); role != nil {
+		role.OnExitMap()
+	}
+}
+
+func (self *mmap) GetRole(roleId int64) *Role {
+	if role, ok := self.roles.Load(roleId); ok {
+		return role.(*Role)
+	}
+	return nil
 }
 
 func (self *mmap) SendToClient(providerName string, clientSid int64, msg core.Msg) bool {

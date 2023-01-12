@@ -24,6 +24,7 @@ func (self *gsEventHandler) OnSessionRemoved(session core.Session) {
 func (self *gsEventHandler) RegisterSvr() {
 	self.RegisterMsg(&msg.LEnterGame{}, self.OnLEnterGame)
 	self.RegisterMsg(&msg.GEnterMap{}, nil)
+	self.RegisterMsg(&msg.GExitMap{}, nil)
 }
 
 func (self *gsEventHandler) RegisterClient() {

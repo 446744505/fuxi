@@ -31,8 +31,30 @@ type CorePort struct {
 	sessions sync.Map
 }
 
+func NewAcceptor(name, host string, port int) Port {
+	t := &CorePort{}
+	t.typ = TypeAcceptor
+	t.name = name
+	t.host = host
+	t.port = port
+	return t
+}
+
+func NewConnector(name, host string, port int) Port {
+	t := &CorePort{}
+	t.typ = TypeConnector
+	t.name = name
+	t.host = host
+	t.port = port
+	return t
+}
+
 func (self *CorePort) Start() {
-	peer := peer.NewGenericPeer(self.typ, self.name, fmt.Sprintf("0.0.0.0:%d", self.port), nil)
+	host := self.host
+	if self.typ == TypeAcceptor {
+		host = "0.0.0.0" //如果直接用host，在docker下面则无法监听(ip是虚拟的)
+	}
+	peer := peer.NewGenericPeer(self.typ, self.name, fmt.Sprintf("%v:%d", host, self.port), nil)
 	self.peer.Store(peer)
 	evtHandler := self.Service().EventHandler()
 	creater := self.Service().SessionCreater()

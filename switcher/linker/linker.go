@@ -44,7 +44,9 @@ func (self *linker) AddSession(session core.Session) {
 }
 
 func (self *linker) RemoveSession(session core.Session) {
-	self.clients.Delete(session.ID())
+	sid := session.ID()
+	self.clients.Delete(sid)
+	util.ClientBroken(sid)
 }
 
 func (self *linker) GetClient(sid int64) core.Session {

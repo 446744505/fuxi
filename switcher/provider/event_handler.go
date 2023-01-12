@@ -14,6 +14,7 @@ func (self *providerEventHandler) Init() {
 	self.RegisterMsg(&msg.BindPvid{}, self.OnBindPvid)
 	self.RegisterMsg(&msg.UnBindPvid{}, self.OnUnBindPvid)
 	self.RegisterMsg(&msg.MessageBox{}, nil)
+	self.RegisterMsg(&msg.ClientBroken{}, nil)
 }
 
 func (self *providerEventHandler) OnSessionAdd(session core.Session) {

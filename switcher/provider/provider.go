@@ -47,6 +47,7 @@ func (self *provider) BindProvidee(pvid int32, name string, session core.Session
 	info, _ := session.GetContext(util.CtxTypeSessionInfo)
 	provideeInfo := info.(*util.ProvideeSessionInfo)
 	provideeInfo.Pvid = pvid
+	provideeInfo.Name = name
 	Log.Infof("bind providee [%d] [%s] [%s]", pvid, name, session)
 
 	url := session.Port().HostPortString()
@@ -66,6 +67,7 @@ func (self *provider) UnBindProvidee(pvid int32) {
 			session := value.(core.Session)
 			url = session.Port().HostPortString()
 			Log.Infof("unbind providee [%d]", pvid)
+			//TODO 踢客户端下线
 		}
 	}
 
@@ -145,5 +147,13 @@ func init() {
 			return
 		}
 		prov.Send(msg)
+	}
+	
+	util.ClientBroken = func(clientSid int64) {
+		Provider.providees.Range(func(_, value interface{}) bool {
+			session := value.(core.Session)
+			session.Send(&msg.ClientBroken{ClientSid: clientSid})
+			return true
+		})
 	}
 }

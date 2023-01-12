@@ -10,12 +10,15 @@ import (
 
 var Providee *providee
 type OnProvideeUpdate func(isRemove bool, meta *core.ProvideeMeta)
+type OnClientBroken func(clientSid int64)
 
 type providee struct {
 	core.CoreService
 	ProvideeServiceConfProp
-	onProvideeUpdate OnProvideeUpdate
 
+	OnClientBroken
+
+	onProvideeUpdate OnProvideeUpdate
 	providerMap sync.Map
 }
 

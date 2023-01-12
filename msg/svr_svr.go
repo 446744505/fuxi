@@ -118,3 +118,59 @@ func (self *MessageBox) Size() (ret int) {
 	ret += proto.SizeBytes(2, self.MsgData)
 	return
 }
+
+type ClientBroken struct {
+	core.CoreMsg `binary:"-"`
+	ClientSid       int64
+}
+
+func (self *ClientBroken) ID() int32 {
+	return 1004
+}
+
+func (self *ClientBroken) Marshal(buffer *proto.Buffer) error {
+	proto.MarshalInt64(buffer, 0, self.ClientSid)
+	return nil
+}
+
+func (self *ClientBroken) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
+	switch fieldIndex {
+	case 0:
+		return proto.UnmarshalInt64(buffer, wt, &self.ClientSid)
+	}
+
+	return proto.ErrUnknownField
+}
+
+func (self *ClientBroken) Size() (ret int) {
+	ret += proto.SizeInt64(0, self.ClientSid)
+	return
+}
+
+type GExitMap struct {
+	core.CoreMsg `binary:"-"`
+	RoleId int64
+}
+
+func (self *GExitMap) ID() int32 {
+	return 1005
+}
+
+func (self *GExitMap) Marshal(buffer *proto.Buffer) error {
+	proto.MarshalInt64(buffer, 0, self.RoleId)
+	return nil
+}
+
+func (self *GExitMap) Unmarshal(buffer *proto.Buffer, fieldIndex uint64, wt proto.WireType) error {
+	switch fieldIndex {
+	case 0:
+		return proto.UnmarshalInt64(buffer, wt, &self.RoleId)
+	}
+
+	return proto.ErrUnknownField
+}
+
+func (self *GExitMap) Size() (ret int) {
+	ret += proto.SizeInt64(0, self.RoleId)
+	return
+}

@@ -8,4 +8,5 @@ type LinkerSessionInfo struct {
 
 type ProvideeSessionInfo struct {
 	Pvid int32
+	Name string
 }
