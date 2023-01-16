@@ -8,7 +8,7 @@ FROM alpine
 ENV etcd=""
 ENV linker=""
 ENV provider=""
-EXPOSE 8080 8088
+ENV pport=0
 WORKDIR /go/src/fuxi
 COPY --from=builder /go/src/fuxi/bin/switcher ./
-ENTRYPOINT ["sh", "-c", "./switcher --linker=${linker} --provider=${provider} --etcd=${etcd}"]
+ENTRYPOINT ["sh", "-c", "./switcher --linker ${linker} --provider ${provider} --etcd ${etcd} --pport ${pport}"]

@@ -9,7 +9,8 @@ FROM alpine
 ARG server
 ENV svr=""
 ENV etcd=""
+ENV pport=0
 ENV args=""
 WORKDIR /go/src/fuxi
 COPY --from=builder /go/src/fuxi/bin/$server ./
-ENTRYPOINT ["sh", "-c", "./${svr} --etcd ${etcd} ${args}"]
+ENTRYPOINT ["sh", "-c", "./${svr} --etcd ${etcd} --pport ${pport} ${args}"]

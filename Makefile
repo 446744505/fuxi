@@ -65,33 +65,41 @@ run_docker_switcher:
 	docker run --name switcher \
 		-p 8080:8080 \
 		-p 8088:8088 \
+		-p 10001:10001 \
 		-e linker=$(HOST):8080 \
 		-e provider=$(HOST):8088 \
 		-e etcd=$(HOST):2379 \
+		-e pport=10001 \
 		switcher
 
 run_docker_gs:
 	docker ps -a -q --filter "name=gs" -q | xargs docker rm
 	docker run --name gs \
+		-p 10002:10002 \
 		-e etcd=$(HOST):2379 \
 		-e svr=gs \
-		-e args="--pvid=1" \
+		-e args="--pvid 1" \
+		-e pport=10002 \
 		gs
 
 run_docker_map:
 	docker ps -a -q --filter "name=map" -q | xargs docker rm
 	docker run --name map \
+		-p 10003:10003 \
 		-e etcd=$(HOST):2379 \
 		-e svr=map \
-		-e args="--pvid=2" \
+		-e args="--pvid 2" \
+		-e pport=10003 \
 		map
 
 run_docker_robot:
 	docker ps -a -q --filter "name=robot" -q | xargs docker rm
 	docker run --name robot \
+		-p 10004:10004 \
 		-e etcd=$(HOST):2379 \
 		-e svr=robot \
-		-e args="--num=1" \
+		-e args="--num 1" \
+		-e pport=10004 \
 		robot
 
 run_docker_all: run_docker_switcher run_docker_gs run_docker_map run_docker_robot
